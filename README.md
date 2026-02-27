@@ -159,6 +159,20 @@ Required tooling/env depends on command:
 | `tt`        | Send Telegram message using `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` | `tt -m "deploy done"` |
 | `k2-dev`    | Shortcut SSH/orb connect helper for `k2-dev`                            | `k2-dev`              |
 | `switchphp` | Switch linked Homebrew PHP version                                      | `switchphp 8.3`       |
+| `up`        | Run daily software refresh (`brew upgrade`, `brew cleanup`, npm globals, Node LTS) | `up`                  |
+
+Daily update command details:
+
+```zsh
+up
+```
+
+`up` executes:
+
+- `brew upgrade`
+- `brew cleanup`
+- `npm install -g @google/gemini-cli @openai/codex @github/copilot`
+- `nvm install --lts` (when `nvm` is available)
 
 ## Secrets Management
 

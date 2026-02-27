@@ -53,3 +53,38 @@ switchphp() {
 	brew link --overwrite php@$1;
     fi
 }
+
+# Daily software update helper
+# Short command: up
+up() {
+    local npm_global_packages=(
+        @google/gemini-cli
+        @openai/codex
+        @github/copilot
+    )
+
+    if ! command -v brew >/dev/null 2>&1; then
+        echo "brew not found; skipping Homebrew updates" >&2
+        return 1
+    fi
+
+    echo "==> Homebrew upgrade"
+    brew upgrade || return 1
+
+    echo "==> Homebrew cleanup"
+    brew cleanup || return 1
+
+    if command -v npm >/dev/null 2>&1; then
+        echo "==> npm global CLI refresh"
+        npm install -g "${npm_global_packages[@]}" || return 1
+    else
+        echo "npm not found; skipping npm global package refresh"
+    fi
+
+    if command -v nvm >/dev/null 2>&1; then
+        echo "==> Node LTS check"
+        nvm install --lts || return 1
+    else
+        echo "nvm not found; skipping Node LTS check"
+    fi
+}
