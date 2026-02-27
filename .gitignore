@@ -1,1 +1,4 @@
 .env
+plugins/zsh-autosuggestions/
+plugins/zsh-completions/
+plugins/zsh-syntax-highlighting/
