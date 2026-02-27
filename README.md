@@ -15,6 +15,7 @@ Personal zsh setup with:
 - [Update (Existing Install)](#update-existing-install)
 - [Configuration Load Order](#configuration-load-order)
 - [Repository Layout](#repository-layout)
+- [Functions Reference](#functions-reference)
 - [Secrets Management](#secrets-management)
 - [DevX Bootstrap](#devx-bootstrap)
 - [Spaceship Prompt Notes](#spaceship-prompt-notes)
@@ -43,7 +44,7 @@ source ~/.zsh/init.zsh
 1. Clone repo:
 
 ```zsh
-git clone <your-repo-url> ~/.zsh
+git clone git@github.com:ivankristianto/zsh.git ~/.zsh
 cd ~/.zsh
 ```
 
@@ -109,6 +110,54 @@ This order is intentional:
 - `themes/spaceship-prompt/`: Spaceship git submodule
 - `plugins/plugins.zsh`: optional plugin/tool loader (safe guards if missing)
 
+## Functions Reference
+
+Both files are auto-loaded from `init.zsh`:
+- `functions/ai_functions.zsh`
+- `functions/functions.zsh`
+
+### AI Functions (`functions/ai_functions.zsh`)
+
+Primary command:
+
+```zsh
+ai [command] [args...]
+```
+
+| Command | Alias | Purpose | Example |
+|---|---|---|---|
+| `ai` | - | Open interactive `fzf` provider picker | `ai` |
+| `sonnet` | `s` | Run Claude Sonnet | `ai sonnet "review this"` |
+| `haiku` | `h` | Run Claude Haiku | `ai haiku "summarize"` |
+| `opus` | `o` | Run Claude Opus | `ai opus "deep analysis"` |
+| `glm` | `g` | Run GLM provider via Z.ai endpoint | `ai glm "hello"` |
+| `mini` | `m` | Run MiniMax provider | `ai mini "hello"` |
+| `or` | - | Run OpenRouter provider (`--model` supported) | `ai or --model anthropic/claude-opus-4 "check"` |
+| `ol` | - | Run Ollama provider (`--model` supported) | `ai ol --model llama3.2 "quick task"` |
+| `codex` | `c` | Run OpenAI Codex CLI | `ai codex` |
+| `gemini` | `ge` | Run Gemini CLI in yolo mode | `ai gemini` |
+| `copilot` | `cp` | Run GitHub Copilot CLI | `ai copilot` |
+| `oc` | - | Run OpenCode build agent (`--model`, `--review`) | `ai oc --review` |
+| `custom` | `cu` | Run custom Anthropic-compatible endpoint | `ai custom --model gpt-4o --endpoint https://... --apikey ...` |
+| `last` | `l` | Re-run last selected provider | `ai last` |
+| `help` | `-h` | Show built-in help and status | `ai help` |
+
+Required tooling/env depends on command:
+- `claude` for Anthropic-compatible routes (`sonnet/haiku/opus/glm/mini/or/ol/custom`)
+- `codex` + `OPENAI_API_KEY` for `ai codex`
+- `gemini` + `GEMINI_API_KEY` for `ai gemini`
+- `copilot` for `ai copilot`
+- `opencode` for `ai oc`
+- `fzf` for interactive picker mode (`ai` with no subcommand)
+
+### General Functions (`functions/functions.zsh`)
+
+| Function | Purpose | Example |
+|---|---|---|
+| `tt` | Send Telegram message using `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` | `tt -m "deploy done"` |
+| `k2-dev` | Shortcut SSH/orb connect helper for `k2-dev` | `k2-dev` |
+| `switchphp` | Switch linked Homebrew PHP version | `switchphp 8.3` |
+
 ## Secrets Management
 
 Rules:
@@ -135,20 +184,16 @@ brew install fzf zoxide eza bat fd ripgrep
 $(brew --prefix)/opt/fzf/install --key-bindings --completion --no-update-rc
 ```
 
-Tool purpose + repo:
+### CLI Tools
 
-- `fzf`: fuzzy finder for files/history/processes  
-  https://github.com/junegunn/fzf
-- `zoxide`: smarter `cd` that learns frequent paths  
-  https://github.com/ajeetdsouza/zoxide
-- `eza`: modern `ls` replacement with icons/git metadata  
-  https://github.com/eza-community/eza
-- `bat`: syntax-highlighted `cat` with pager integration  
-  https://github.com/sharkdp/bat
-- `fd`: simpler, fast alternative to `find`  
-  https://github.com/sharkdp/fd
-- `ripgrep` (`rg`): fast recursive text search  
-  https://github.com/BurntSushi/ripgrep
+| Tool             | Purpose                                             | Repo                                  | Install                |
+| ---------------- | --------------------------------------------------- | ------------------------------------- | ---------------------- |
+| `fzf`            | Fuzzy finder for files/history/processes            | https://github.com/junegunn/fzf       | `brew install fzf`     |
+| `zoxide`         | Smarter `cd` that learns frequent paths             | https://github.com/ajeetdsouza/zoxide | `brew install zoxide`  |
+| `eza`            | Modern `ls` replacement with icons and git metadata | https://github.com/eza-community/eza  | `brew install eza`     |
+| `bat`            | Syntax-highlighted `cat` with pager integration     | https://github.com/sharkdp/bat        | `brew install bat`     |
+| `fd`             | Fast and simple alternative to `find`               | https://github.com/sharkdp/fd         | `brew install fd`      |
+| `ripgrep` (`rg`) | Fast recursive text search                          | https://github.com/BurntSushi/ripgrep | `brew install ripgrep` |
 
 Install zsh plugins used by this repo:
 
@@ -157,6 +202,14 @@ git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions.git ~/.zsh/
 git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.zsh/plugins/zsh-syntax-highlighting
 git clone --depth=1 https://github.com/zsh-users/zsh-completions.git ~/.zsh/plugins/zsh-completions
 ```
+
+### zsh Plugins
+
+| Plugin                    | Purpose                                       | Repo                                                 | Install Path                             |
+| ------------------------- | --------------------------------------------- | ---------------------------------------------------- | ---------------------------------------- |
+| `zsh-autosuggestions`     | Suggests commands based on shell history      | https://github.com/zsh-users/zsh-autosuggestions     | `~/.zsh/plugins/zsh-autosuggestions`     |
+| `zsh-syntax-highlighting` | Highlights valid/invalid commands as you type | https://github.com/zsh-users/zsh-syntax-highlighting | `~/.zsh/plugins/zsh-syntax-highlighting` |
+| `zsh-completions`         | Adds many extra command completions           | https://github.com/zsh-users/zsh-completions         | `~/.zsh/plugins/zsh-completions`         |
 
 Optional aliases:
 
