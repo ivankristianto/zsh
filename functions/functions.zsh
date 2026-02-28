@@ -57,12 +57,6 @@ switchphp() {
 # Daily software update helper
 # Short command: up
 up() {
-    local npm_global_packages=(
-        @google/gemini-cli
-        @openai/codex
-        @github/copilot
-    )
-
     if ! command -v brew >/dev/null 2>&1; then
         echo "brew not found; skipping Homebrew updates" >&2
         return 1
@@ -75,8 +69,14 @@ up() {
     brew cleanup || return 1
 
     if command -v npm >/dev/null 2>&1; then
-        echo "==> npm global CLI refresh"
-        npm install -g "${npm_global_packages[@]}" || return 1
+        local npm_global_packages
+        npm_global_packages=($(npm list -g --depth=0 --parseable 2>/dev/null | tail -n +2 | sed 's|.*/node_modules/||' | grep -v '^npm$'))
+        if [[ ${#npm_global_packages[@]} -gt 0 ]]; then
+            echo "==> npm global CLI refresh (${#npm_global_packages[@]} packages: ${npm_global_packages[*]})"
+            npm install -g "${npm_global_packages[@]}" || return 1
+        else
+            echo "==> npm: no global packages found"
+        fi
     else
         echo "npm not found; skipping npm global package refresh"
     fi
