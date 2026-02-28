@@ -154,11 +154,11 @@ Required tooling/env depends on command:
 
 ### General Functions (`functions/functions.zsh`)
 
-| Function    | Purpose                                                                 | Example               |
-| ----------- | ----------------------------------------------------------------------- | --------------------- |
-| `tt`        | Send Telegram message using `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` | `tt -m "deploy done"` |
-| `k2-dev`    | Shortcut SSH/orb connect helper for `k2-dev`                            | `k2-dev`              |
-| `switchphp` | Switch linked Homebrew PHP version                                      | `switchphp 8.3`       |
+| Function    | Purpose                                                                            | Example               |
+| ----------- | ---------------------------------------------------------------------------------- | --------------------- |
+| `tt`        | Send Telegram message using `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`            | `tt -m "deploy done"` |
+| `k2-dev`    | Shortcut SSH/orb connect helper for `k2-dev`                                       | `k2-dev`              |
+| `switchphp` | Switch linked Homebrew PHP version                                                 | `switchphp 8.3`       |
 | `up`        | Run daily software refresh (`brew upgrade`, `brew cleanup`, npm globals, Node LTS) | `up`                  |
 
 Daily update command details:
@@ -261,7 +261,7 @@ Optional aliases:
 
 ```zsh
 alias ls='eza --group-directories-first'
-alias ll='eza -la --icons --git'
+alias ll='eza -la --icons --git --group-directories-first'
 alias cat='bat'
 ```
 
