@@ -1,4 +1,7 @@
 # ZSH Settings
+
+# Homebrew
+export PATH="/opt/homebrew/bin:$PATH"
 HISTSIZE=20000
 HISTFILE=~/.zsh_history
 SAVEHIST=20000
