@@ -10,3 +10,7 @@ setopt hist_ignore_all_dups
 setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
+
+# Locale
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
