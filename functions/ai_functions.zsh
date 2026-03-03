@@ -444,7 +444,7 @@ _ai_run_claude_ship() {
   _ai_save_last "$model ship"
   claude --dangerously-skip-permissions --model "$model" \
     --system-prompt "$_AI_SHIP_PROMPT" \
-    -p "Let's review and commit the changes. What's the current git status?" \
+    "Let's review and commit the changes. What's the current git status?" \
     "$@"
 }
 
@@ -487,7 +487,7 @@ _ai_run_provider_ship() {
   CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
   claude --dangerously-skip-permissions \
     --system-prompt "$_AI_SHIP_PROMPT" \
-    -p "Let's review and commit the changes. What's the current git status?" \
+    "Let's review and commit the changes. What's the current git status?" \
     "$@"
 }
 
@@ -580,4 +580,6 @@ _ai_completions() {
   )
   _describe 'ai command' subcmds
 }
-(( ${+functions[compdef]} )) && compdef _ai_completions ai
+if (( ${+functions[compdef]} )) && (( ${+_comps} )); then
+  compdef _ai_completions ai
+fi
