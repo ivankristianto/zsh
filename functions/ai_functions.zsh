@@ -24,6 +24,21 @@ typeset -gA _AI=(
   [bmag]='\033[1;35m'
 )
 
+# Ship prompt for git assistance
+_AI_SHIP_PROMPT='You are a git assistant. Help me commit changes, push to the current branch, and create a PR.
+
+Use these tools available to you:
+- git commands via shell
+- gh CLI for PR creation
+
+Workflow:
+1. Check git status and suggest what to stage
+2. Craft a good commit message based on the diff
+3. Commit and push to current branch
+4. Create a PR with gh pr create
+
+Be concise but thorough. Ask me questions if anything is unclear.'
+
 # ─── Provider registry ──────────────────────────────────────────────────────
 # Anthropic-compatible providers: env_var|base_url|model|haiku|sonnet|opus|color|label|model_flag
 #   model_flag: 1 = supports --model override + passes --model to claude, 0 = fixed model
@@ -388,6 +403,94 @@ _ai_help() {
   printf "\n"
 }
 
+# ─── Ship command ───────────────────────────────────────────────────────────
+
+_ai_run_ship() {
+  local provider="$1"; shift
+
+  # Check if in git repo
+  if ! _ai_in_git_repo; then
+    printf "${_AI[red]}✗ Not in a git repository${_AI[r]}\n"
+    return 1
+  fi
+
+  # Warn if gh not available
+  if ! _ai_has_cmd gh; then
+    printf "${_AI[yellow]}⚠ gh CLI not found. PR creation will not work.${_AI[r]}\n"
+    printf "   Install: brew install gh && gh auth login\n"
+  fi
+
+  # Build the launch command based on provider
+  case "$provider" in
+    sonnet|s)       _ai_run_claude_ship "sonnet" "$@" ;;
+    haiku|h)        _ai_run_claude_ship "haiku" "$@" ;;
+    opus|o)         _ai_run_claude_ship "opus" "$@" ;;
+    glm|g)          _ai_run_provider_ship "glm" "$@" ;;
+    kimi|k)         _ai_run_provider_ship "kimi" "$@" ;;
+    mini|m)         _ai_run_provider_ship "mini" "$@" ;;
+    or|openrouter)  _ai_run_provider_ship "or" "$@" ;;
+    ol|ollama)      _ai_run_provider_ship "ol" "$@" ;;
+    *)
+      printf "${_AI[red]}✗ Unknown provider for ship: %s${_AI[r]}\n" "$provider"
+      return 1
+      ;;
+  esac
+}
+
+_ai_run_claude_ship() {
+  local model="$1"; shift
+  _ai_require_cmd claude || return 1
+  printf "${_AI[bcyan]}▶${_AI[r]} Claude Ship ${_AI[b]}%s${_AI[r]}\n" "$model"
+  _ai_save_last "$model ship"
+  claude --dangerously-skip-permissions --model "$model" \
+    --system "$_AI_SHIP_PROMPT" \
+    -p "Let's review and commit the changes. What's the current git status?" \
+    "$@"
+}
+
+_ai_run_provider_ship() {
+  local key="$1"; shift
+  local cfg="${_AI_PROVIDERS[$key]}"
+  [[ -z "$cfg" ]] && { printf "${_AI[red]}✗ Unknown provider: %s${_AI[r]}\n" "$key"; return 1; }
+
+  _ai_require_cmd claude || return 1
+
+  local parts=("${(@s:|:)cfg}")
+  local env_var="$parts[1]"   base_url="$parts[2]"  default_model="$parts[3]"
+  local haiku="$parts[4]"     sonnet="$parts[5]"    opus="$parts[6]"
+  local color="$parts[7]"     label="$parts[8]"     model_flag="$parts[9]"
+
+  # Resolve auth token
+  local token
+  if [[ "$env_var" == "_OLLAMA" ]]; then
+    _ai_has_ollama || {
+      printf "${_AI[red]}✗ Ollama unavailable (install ollama and run server at localhost:11434)${_AI[r]}\n"
+      return 1
+    }
+    token="ollama"
+  else
+    token="${(P)env_var}"
+    [[ -z "$token" ]] && { printf "${_AI[red]}✗ %s not set${_AI[r]}\n" "$env_var"; return 1; }
+  fi
+
+  printf "${_AI[$color]}▶${_AI[r]} %s Ship ${_AI[b]}%s${_AI[r]}\n" "$label" "$default_model"
+  _ai_save_last "$key ship"
+
+  ANTHROPIC_AUTH_TOKEN="$token" \
+  ANTHROPIC_BASE_URL="$base_url" \
+  ANTHROPIC_API_KEY="" \
+  API_TIMEOUT_MS=3000000 \
+  ANTHROPIC_MODEL="$default_model" \
+  ANTHROPIC_DEFAULT_HAIKU_MODEL="$haiku" \
+  ANTHROPIC_DEFAULT_SONNET_MODEL="$sonnet" \
+  ANTHROPIC_DEFAULT_OPUS_MODEL="$opus" \
+  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
+  claude --dangerously-skip-permissions \
+    --system "$_AI_SHIP_PROMPT" \
+    -p "Let's review and commit the changes. What's the current git status?" \
+    "$@"
+}
+
 # ─── Main dispatcher ────────────────────────────────────────────────────────
 
 _ai_in_git_repo() {
@@ -403,7 +506,7 @@ ai() {
     return
   fi
   if [[ $# -eq 1 && "$1" == "ship" ]]; then
-    _ai_run_ship "haiku" "$@"
+    _ai_run_ship "haiku"
     return
   fi
 
