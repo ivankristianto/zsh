@@ -25,7 +25,7 @@ typeset -gA _AI=(
 )
 
 # Ship prompt for git assistance
-_AI_SHIP_PROMPT='You are a git assistant. Help me commit changes, push to the current branch, and create a PR.
+_AI_SHIP_PROMPT='You are a git assistant. Help me commit changes, push to the current branch, and create a PR if the PR needs to be created.
 
 Use these tools available to you:
 - git commands via shell
@@ -378,10 +378,6 @@ _ai_help() {
   _ai_help_cmd_row "help" "-h" "Show help and status"
   (( printed == 0 )) && printf "    ${_AI[yellow]}⚠ No providers available yet. Configure keys/tools below.${_AI[r]}\n"
   printf "\n"
-  printf "  ${_AI[b]}  GIT WORKFLOW${_AI[r]}\n"
-  printf "    ${_AI[cyan]}%-10s${_AI[r]} ${_AI[d]}%-3s${_AI[r]}  %s\n" "<cmd> ship" "" "Interactive git commit/push/PR (e.g., ai g ship)"
-  printf "    ${_AI[d]}Examples: ai ship, ai s ship, ai g ship, ai k ship${_AI[r]}\n"
-  printf "\n"
   printf "  ${_AI[b]}EXAMPLES${_AI[r]}\n"
   _ai_cmd_available sonnet    && { printf "    ${_AI[d]}ai s \"review this diff\"${_AI[r]}\n"; ((example_count++)); }
   _ai_cmd_available haiku     && { printf "    ${_AI[d]}ai h \"summarize this error\"${_AI[r]}\n"; ((example_count++)); }
@@ -447,7 +443,7 @@ _ai_run_claude_ship() {
   printf "${_AI[bcyan]}▶${_AI[r]} Claude Ship ${_AI[b]}%s${_AI[r]}\n" "$model"
   _ai_save_last "$model ship"
   claude --dangerously-skip-permissions --model "$model" \
-    --system "$_AI_SHIP_PROMPT" \
+    --system-prompt "$_AI_SHIP_PROMPT" \
     -p "Let's review and commit the changes. What's the current git status?" \
     "$@"
 }
@@ -490,7 +486,7 @@ _ai_run_provider_ship() {
   ANTHROPIC_DEFAULT_OPUS_MODEL="$opus" \
   CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
   claude --dangerously-skip-permissions \
-    --system "$_AI_SHIP_PROMPT" \
+    --system-prompt "$_AI_SHIP_PROMPT" \
     -p "Let's review and commit the changes. What's the current git status?" \
     "$@"
 }

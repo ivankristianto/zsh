@@ -143,6 +143,7 @@ ai [command] [args...]
 | `opencode`   | `oc`  | OpenCode build agent (`--model`, `--review`)           | `ai opencode --review`                                                         |
 | `last`       | `l`   | Re-run last selected provider                          | `ai last`                                                                      |
 | `help`       | `-h`  | Show built-in help and status (shows only ready cmds)  | `ai help`                                                                      |
+| `<cmd> ship` | -     | Interactive git assistant (commit/push/PR)             | `ai g ship`                                                                    |
 
 Required tooling/env depends on command:
 
@@ -180,6 +181,27 @@ ai oc --review
 ai last
 ai l
 ```
+
+### Git Workflow (`ai ship`)
+
+Launch interactive git assistant with any provider:
+
+```zsh
+# Default (Haiku)
+ai ship
+
+# With specific providers
+ai s ship      # Claude Sonnet
+ai g ship      # GLM
+ai k ship      # Kimi
+ai or ship     # OpenRouter
+```
+
+The AI will:
+1. Review your changes
+2. Help craft commit messages
+3. Commit and push
+4. Create a PR via `gh`
 
 ### General Functions (`functions/functions.zsh`)
 
