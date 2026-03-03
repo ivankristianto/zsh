@@ -390,7 +390,23 @@ _ai_help() {
 
 # ─── Main dispatcher ────────────────────────────────────────────────────────
 
+_ai_in_git_repo() {
+  git rev-parse --git-dir &>/dev/null
+}
+
 ai() {
+  # Ship subcommand detection
+  if [[ $# -ge 2 && "$2" == "ship" ]]; then
+    local provider="$1"
+    shift 2
+    _ai_run_ship "$provider" "$@"
+    return
+  fi
+  if [[ $# -eq 1 && "$1" == "ship" ]]; then
+    _ai_run_ship "haiku" "$@"
+    return
+  fi
+
   if [[ $# -eq 0 ]]; then
     _ai_pick
     return
