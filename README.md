@@ -87,7 +87,7 @@ exec zsh
 `init.zsh` loads files in this order:
 
 1. `settings.zsh`
-2. `keys.sh`
+2. `keys.zsh`
 3. `themes/.zsh_theme`
 4. `functions/ai_functions.zsh`
 5. `functions/functions.zsh`
@@ -103,7 +103,7 @@ This order is intentional:
 
 - `init.zsh`: single entrypoint
 - `settings.zsh`: shell history and zsh options
-- `keys.sh`: loads variables from `.env` and exports compatibility vars
+- `keys.zsh`: loads variables from `.env` and exports compatibility vars
 - `.env.example`: tracked template for required env variable names
 - `functions/`: custom shell functions
 - `themes/.zsh_theme`: Spaceship prompt config
@@ -350,13 +350,13 @@ SPACESHIP_USER_SHOW=always
 Validate zsh syntax:
 
 ```zsh
-zsh -n ~/.zsh/init.zsh ~/.zsh/settings.zsh ~/.zsh/keys.sh ~/.zsh/themes/.zsh_theme ~/.zsh/plugins/plugins.zsh
+zsh -n ~/.zsh/init.zsh ~/.zsh/settings.zsh ~/.zsh/keys.zsh ~/.zsh/themes/.zsh_theme ~/.zsh/plugins/plugins.zsh
 ```
 
 Verify secrets load:
 
 ```zsh
-zsh -lc 'source ~/.zsh/keys.sh; [[ -n "$OPENAI_API_KEY" ]] && echo OK || echo MISSING'
+zsh -lc 'source ~/.zsh/keys.zsh; [[ -n "$OPENAI_API_KEY" ]] && echo OK || echo MISSING'
 ```
 
 Check current Spaceship values:
@@ -385,5 +385,5 @@ Submodule missing after clone:
 Secrets not available in commands:
 
 - confirm `.env` exists and contains valid `KEY="value"` lines
-- run `source ~/.zsh/keys.sh`
+- run `source ~/.zsh/keys.zsh`
 - verify with `printenv | rg 'OPENAI_API_KEY|OPENROUTER_API_KEY|KIMI_API_KEY'`

@@ -45,12 +45,26 @@ k2-dev() {
 
 # PHP
 switchphp() {
-    brew unlink php && brew link --overwrite --force shivammathur/php/php@$1
+    local version="$1"
 
-    if [ "$1" = "7.4" ] || [  "$1" = "8.1" ]; 
-    then
-	brew unlink php@$1 && brew link --force php@$1;
-	brew link --overwrite php@$1;
+    # Validate version format (e.g., 8.3, 7.4)
+    if [[ ! "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
+        echo "Usage: switchphp <version> (e.g., switchphp 8.3)" >&2
+        return 1
+    fi
+
+    # Check if requested PHP version is installed
+    if ! brew list "php@$version" &>/dev/null; then
+        echo "php@$version is not installed. Install with: brew install php@$version" >&2
+        return 1
+    fi
+
+    brew unlink php 2>/dev/null || true
+    brew link --overwrite --force "shivammathur/php/php@$version" || return 1
+
+    if [[ "$version" == "7.4" || "$version" == "8.1" ]]; then
+        brew unlink "php@$version" && brew link --force "php@$version"
+        brew link --overwrite "php@$version"
     fi
 }
 
@@ -73,7 +87,7 @@ up() {
         npm_global_packages=($(npm list -g --depth=0 --parseable 2>/dev/null | tail -n +2 | sed 's|.*/node_modules/||' | grep -v '^npm$'))
         if [[ ${#npm_global_packages[@]} -gt 0 ]]; then
             echo "==> npm global CLI refresh (${#npm_global_packages[@]} packages: ${npm_global_packages[*]})"
-            npm install -g "${npm_global_packages[@]}" || return 1
+            npm install -g "${npm_global_packages[@]}" || echo "    ⚠ npm update failed (continuing)" >&2
         else
             echo "==> npm: no global packages found"
         fi
@@ -83,7 +97,7 @@ up() {
 
     if command -v nvm >/dev/null 2>&1; then
         echo "==> Node LTS check"
-        nvm install --lts || return 1
+        nvm install --lts || echo "    ⚠ nvm LTS install failed (continuing)" >&2
     else
         echo "nvm not found; skipping Node LTS check"
     fi

@@ -13,7 +13,7 @@ Keep shell startup predictable, secure, and fast while preserving current UX.
 - User-facing documentation: `README.md`
 - Runtime entrypoint: `init.zsh`
 - Prompt config: `themes/.zsh_theme`
-- Secrets loader: `keys.sh` + `.env`
+- Secrets loader: `keys.zsh` + `.env`
 
 ## Non-Negotiable Rules
 
@@ -22,14 +22,14 @@ Keep shell startup predictable, secure, and fast while preserving current UX.
 - Store real secrets only in `.env`.
 - Never commit `.env`.
 - Keep `.env.example` as placeholders only.
-- Load env vars via `keys.sh` (not inline in other files).
+- Load env vars via `keys.zsh` (not inline in other files).
 
 ### Startup Structure
 
 - `init.zsh` is the single entrypoint sourced by `~/.zshrc`.
 - Keep current load order unless explicitly requested:
   1. `settings.zsh`
-  2. `keys.sh`
+  2. `keys.zsh`
   3. `themes/.zsh_theme`
   4. `functions/ai_functions.zsh`
   5. `functions/functions.zsh`
@@ -58,10 +58,10 @@ Keep shell startup predictable, secure, and fast while preserving current UX.
 Run these after relevant edits:
 
 1. Syntax:
-   `zsh -n ~/.zsh/init.zsh ~/.zsh/settings.zsh ~/.zsh/keys.sh ~/.zsh/themes/.zsh_theme ~/.zsh/plugins/plugins.zsh`
+   `zsh -n ~/.zsh/init.zsh ~/.zsh/settings.zsh ~/.zsh/keys.zsh ~/.zsh/themes/.zsh_theme ~/.zsh/plugins/plugins.zsh`
 
 2. Secrets load:
-   `zsh -lc 'source ~/.zsh/keys.sh; [[ -n "$OPENAI_API_KEY" ]] && echo OK || echo MISSING'`
+   `zsh -lc 'source ~/.zsh/keys.zsh; [[ -n "$OPENAI_API_KEY" ]] && echo OK || echo MISSING'`
 
 3. Prompt config state:
    `zsh -lic 'print -r -- "HOST_SHOW=$SPACESHIP_HOST_SHOW TIME_FORMAT=$SPACESHIP_TIME_FORMAT"'`
