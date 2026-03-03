@@ -378,6 +378,10 @@ _ai_help() {
   _ai_help_cmd_row "help" "-h" "Show help and status"
   (( printed == 0 )) && printf "    ${_AI[yellow]}⚠ No providers available yet. Configure keys/tools below.${_AI[r]}\n"
   printf "\n"
+  printf "  ${_AI[b]}  GIT WORKFLOW${_AI[r]}\n"
+  printf "    ${_AI[cyan]}%-10s${_AI[r]} ${_AI[d]}%-3s${_AI[r]}  %s\n" "<cmd> ship" "" "Interactive git commit/push/PR (e.g., ai g ship)"
+  printf "    ${_AI[d]}Examples: ai ship, ai s ship, ai g ship, ai k ship${_AI[r]}\n"
+  printf "\n"
   printf "  ${_AI[b]}EXAMPLES${_AI[r]}\n"
   _ai_cmd_available sonnet    && { printf "    ${_AI[d]}ai s \"review this diff\"${_AI[r]}\n"; ((example_count++)); }
   _ai_cmd_available haiku     && { printf "    ${_AI[d]}ai h \"summarize this error\"${_AI[r]}\n"; ((example_count++)); }
