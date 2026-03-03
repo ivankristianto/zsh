@@ -12,6 +12,7 @@ fi
 export OPENAI_API_KEY
 export OPENROUTER_API_KEY
 export GLM_API_KEY
+export KIMI_API_KEY
 export MINIMAX_API_KEY
 export GOOGLE_API_KEY
 export GEMINI_API_KEY

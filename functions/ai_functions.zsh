@@ -30,6 +30,7 @@ typeset -gA _AI=(
 
 typeset -gA _AI_PROVIDERS=(
   [glm]="GLM_API_KEY|https://api.z.ai/api/anthropic|glm-4.7|glm-4.5-Air|glm-4.7|glm-4.7|byel|GLM|0"
+  [kimi]="KIMI_API_KEY|https://api.kimi.com/coding/|kimi-k2.5|kimi-k2.5|kimi-k2.5|kimi-k2.5|mag|Kimi|0"
   [mini]="MINIMAX_API_KEY|https://api.minimax.io/anthropic|MiniMax-M2.1|MiniMax-M2.1|MiniMax-M2.1|MiniMax-M2.1|bmag|MiniMax|0"
   [or]="OPENROUTER_API_KEY|https://openrouter.ai/api|anthropic/claude-sonnet-4|anthropic/claude-sonnet-4|anthropic/claude-sonnet-4|anthropic/claude-sonnet-4|bgreen|OpenRouter|1"
   [ol]="_OLLAMA|http://localhost:11434|glm-5:cloud|glm-5:cloud|glm-5:cloud|glm-5:cloud|blue|Ollama|1"
@@ -37,15 +38,27 @@ typeset -gA _AI_PROVIDERS=(
 
 # ─── Internal helpers ────────────────────────────────────────────────────────
 
+_ai_has_env() {
+  [[ -n "${(P)1}" ]]
+}
+
+_ai_has_cmd() {
+  command -v "$1" &>/dev/null
+}
+
+_ai_has_ollama() {
+  _ai_has_cmd ollama && curl -sf --connect-timeout 1 http://localhost:11434/api/tags >/dev/null 2>&1
+}
+
 _ai_require_cmd() {
-  command -v "$1" &>/dev/null || {
+  _ai_has_cmd "$1" || {
     printf "${_AI[red]}✗ %s not found${_AI[r]}\n" "$1"
     return 1
   }
 }
 
 _ai_check() {
-  if [[ -n "${(P)1}" ]]; then
+  if _ai_has_env "$1"; then
     printf "${_AI[green]}●${_AI[r]}"
   else
     printf "${_AI[red]}○${_AI[r]}"
@@ -53,7 +66,7 @@ _ai_check() {
 }
 
 _ai_check_cmd() {
-  if command -v "$1" &>/dev/null; then
+  if _ai_has_cmd "$1"; then
     printf "${_AI[green]}●${_AI[r]}"
   else
     printf "${_AI[red]}○${_AI[r]}"
@@ -61,7 +74,7 @@ _ai_check_cmd() {
 }
 
 _ai_check_ollama() {
-  if curl -sf --connect-timeout 1 http://localhost:11434/api/tags >/dev/null 2>&1; then
+  if _ai_has_ollama; then
     printf "${_AI[green]}●${_AI[r]}"
   else
     printf "${_AI[red]}○${_AI[r]}"
@@ -70,6 +83,36 @@ _ai_check_ollama() {
 
 _ai_save_last() {
   printf '%s' "$1" > "${TMPDIR:-/tmp}/.ai_last_provider"
+}
+
+_ai_cmd_available() {
+  local cmd="$1"
+  local last_file="${TMPDIR:-/tmp}/.ai_last_provider"
+  case "$cmd" in
+    sonnet|haiku|opus|custom) _ai_has_cmd claude ;;
+    glm)                      _ai_has_cmd claude && _ai_has_env GLM_API_KEY ;;
+    kimi|k)                   _ai_has_cmd claude && _ai_has_env KIMI_API_KEY ;;
+    mini|m)                   _ai_has_cmd claude && _ai_has_env MINIMAX_API_KEY ;;
+    or|openrouter)            _ai_has_cmd claude && _ai_has_env OPENROUTER_API_KEY ;;
+    ol|ollama)                _ai_has_cmd claude && _ai_has_ollama ;;
+    codex|c)                  _ai_has_cmd codex && _ai_has_env OPENAI_API_KEY ;;
+    gemini|ge)                _ai_has_cmd gemini && _ai_has_env GEMINI_API_KEY ;;
+    copilot|cp)               _ai_has_cmd copilot ;;
+    oc|opencode)              _ai_has_cmd opencode ;;
+    last|l)                   [[ -f "$last_file" ]] ;;
+    help|--help|-h)           return 0 ;;
+    *)                        return 1 ;;
+  esac
+}
+
+_ai_help_cmd_row() {
+  local cmd="$1" alias="$2" desc="$3"
+  printf "    ${_AI[cyan]}%-10s${_AI[r]} ${_AI[d]}%-3s${_AI[r]}  %s\n" "$cmd" "$alias" "$desc"
+}
+
+_ai_help_status_row() {
+  local lcheck="$1" llabel="$2" rcheck="$3" rlabel="$4"
+  printf "    %s %-24s %s %s\n" "$lcheck" "$llabel" "$rcheck" "$rlabel"
 }
 
 # ─── Generic provider runner ────────────────────────────────────────────────
@@ -89,8 +132,8 @@ _ai_run_provider() {
   # Resolve auth token
   local token
   if [[ "$env_var" == "_OLLAMA" ]]; then
-    curl -sf --connect-timeout 1 http://localhost:11434/api/tags >/dev/null 2>&1 || {
-      printf "${_AI[red]}✗ Ollama not running at localhost:11434${_AI[r]}\n"
+    _ai_has_ollama || {
+      printf "${_AI[red]}✗ Ollama unavailable (install ollama and run server at localhost:11434)${_AI[r]}\n"
       return 1
     }
     token="ollama"
@@ -243,20 +286,25 @@ _ai_pick() {
     return 1
   fi
 
-  # Tab-delimited: cmd<TAB>display — fzf shows only display, we extract cmd
-  local entries=(
-    "sonnet"$'\t'"$(_ai_check_cmd claude)  sonnet  │  Claude Sonnet   │  claude-sonnet-4      │  anthropic"
-    "haiku"$'\t'"$(_ai_check_cmd claude)  haiku   │  Claude Haiku    │  claude-haiku-4       │  anthropic"
-    "opus"$'\t'"$(_ai_check_cmd claude)  opus    │  Claude Opus     │  claude-opus-4        │  anthropic"
-    "glm"$'\t'"$(_ai_check GLM_API_KEY)  glm     │  GLM-4.7         │  glm-4.7              │  z.ai"
-    "mini"$'\t'"$(_ai_check MINIMAX_API_KEY)  mini    │  MiniMax M2.1    │  MiniMax-M2.1         │  minimax"
-    "or"$'\t'"$(_ai_check OPENROUTER_API_KEY)  or      │  OpenRouter      │  claude-sonnet-4      │  openrouter"
-    "ol"$'\t'"$(_ai_check_ollama)  ol      │  Ollama          │  glm-5:cloud          │  local"
-    "codex"$'\t'"$(_ai_check OPENAI_API_KEY)  codex   │  Codex           │  codex                │  openai"
-    "gemini"$'\t'"$(_ai_check GEMINI_API_KEY)  gemini  │  Gemini          │  gemini-cli           │  google"
-    "cp"$'\t'"$(_ai_check_cmd copilot)  cp      │  Copilot         │  copilot              │  github"
-    "oc"$'\t'"$(_ai_check_cmd opencode)  oc      │  OpenCode        │  build agent          │  opencode"
-  )
+  # Tab-delimited: cmd<TAB>display — fzf shows only display, we extract cmd.
+  local -a entries=()
+  _ai_cmd_available sonnet    && entries+=("sonnet"$'\t'"$(_ai_check_cmd claude)  sonnet     │  Claude Sonnet        │  claude-sonnet-4      │  claude")
+  _ai_cmd_available haiku     && entries+=("haiku"$'\t'"$(_ai_check_cmd claude)  haiku      │  Claude Haiku         │  claude-haiku-4       │  claude")
+  _ai_cmd_available opus      && entries+=("opus"$'\t'"$(_ai_check_cmd claude)  opus       │  Claude Opus          │  claude-opus-4        │  claude")
+  _ai_cmd_available glm       && entries+=("glm"$'\t'"$(_ai_check GLM_API_KEY)  glm        │  GLM-4.7 (Z.ai)       │  glm-4.7              │  claude")
+  _ai_cmd_available kimi      && entries+=("kimi"$'\t'"$(_ai_check KIMI_API_KEY)  kimi       │  Kimi K2.5            │  kimi-k2.5            │  claude")
+  _ai_cmd_available mini      && entries+=("mini"$'\t'"$(_ai_check MINIMAX_API_KEY)  mini       │  MiniMax M2.1         │  MiniMax-M2.1         │  claude")
+  _ai_cmd_available openrouter && entries+=("openrouter"$'\t'"$(_ai_check OPENROUTER_API_KEY)  openrouter │  OpenRouter           │  claude-sonnet-4      │  claude")
+  _ai_cmd_available ollama    && entries+=("ollama"$'\t'"$(_ai_check_ollama)  ollama     │  Ollama Local         │  glm-5:cloud          │  claude")
+  _ai_cmd_available codex     && entries+=("codex"$'\t'"$(_ai_check OPENAI_API_KEY)  codex      │  OpenAI Codex CLI     │  codex                │  openai")
+  _ai_cmd_available gemini    && entries+=("gemini"$'\t'"$(_ai_check GEMINI_API_KEY)  gemini     │  Gemini CLI (yolo)    │  gemini-cli           │  google")
+  _ai_cmd_available cp        && entries+=("cp"$'\t'"$(_ai_check_cmd copilot)  cp         │  GitHub Copilot CLI   │  copilot              │  github")
+  _ai_cmd_available oc        && entries+=("oc"$'\t'"$(_ai_check_cmd opencode)  oc         │  OpenCode CLI         │  build agent          │  opencode")
+
+  if (( ${#entries[@]} == 0 )); then
+    printf "${_AI[yellow]}⚠ No provider is currently available. Run ${_AI[cyan]}ai --help${_AI[r]} for setup status.\n"
+    return 1
+  fi
 
   local header="   CMD     │  PROVIDER        │  MODEL                │  BACKEND"
 
@@ -282,44 +330,75 @@ _ai_pick() {
 # ─── Help ────────────────────────────────────────────────────────────────────
 
 _ai_help() {
+  local printed=0
+  local example_count=0
   printf "\n"
   printf "${_AI[bcyan]}  ▄▀█ █${_AI[r]}   ${_AI[d]}AI Provider Launcher${_AI[r]}\n"
-  printf "${_AI[bcyan]}  █▀█ █${_AI[r]}   ${_AI[d]}v3.0${_AI[r]}\n"
+  printf "${_AI[bcyan]}  █▀█ █${_AI[r]}   ${_AI[d]}v3.1${_AI[r]}\n"
   printf "\n"
   printf "  ${_AI[b]}USAGE${_AI[r]}\n"
   printf "    ai                     interactive picker (fzf)\n"
   printf "    ai ${_AI[cyan]}<cmd>${_AI[r]} [args...]     launch provider directly\n"
   printf "\n"
   printf "  ${_AI[b]}COMMANDS${_AI[r]}\n"
-  printf "    ${_AI[cyan]}sonnet${_AI[r]}  ${_AI[d]}s${_AI[r]}    Claude Sonnet\n"
-  printf "    ${_AI[cyan]}haiku${_AI[r]}   ${_AI[d]}h${_AI[r]}    Claude Haiku\n"
-  printf "    ${_AI[cyan]}opus${_AI[r]}    ${_AI[d]}o${_AI[r]}    Claude Opus\n"
-  printf "    ${_AI[cyan]}glm${_AI[r]}     ${_AI[d]}g${_AI[r]}    GLM-4.7 via Z.ai\n"
-  printf "    ${_AI[cyan]}mini${_AI[r]}    ${_AI[d]}m${_AI[r]}    MiniMax M2.1\n"
-  printf "    ${_AI[cyan]}or${_AI[r]}           OpenRouter          ${_AI[d]}--model to override${_AI[r]}\n"
-  printf "    ${_AI[cyan]}ol${_AI[r]}           Ollama              ${_AI[d]}--model to override${_AI[r]}\n"
-  printf "    ${_AI[cyan]}codex${_AI[r]}   ${_AI[d]}c${_AI[r]}    OpenAI Codex\n"
-  printf "    ${_AI[cyan]}gemini${_AI[r]}  ${_AI[d]}ge${_AI[r]}   Gemini CLI (yolo)\n"
-  printf "    ${_AI[cyan]}copilot${_AI[r]} ${_AI[d]}cp${_AI[r]}   GitHub Copilot\n"
-  printf "    ${_AI[cyan]}oc${_AI[r]}           OpenCode            ${_AI[d]}build agent  --model  --review${_AI[r]}\n"
-  printf "    ${_AI[cyan]}custom${_AI[r]}  ${_AI[d]}cu${_AI[r]}   Custom endpoint     ${_AI[d]}--model --endpoint --apikey${_AI[r]}\n"
-  printf "    ${_AI[cyan]}last${_AI[r]}    ${_AI[d]}l${_AI[r]}    Re-run last provider\n"
+  printf "    ${_AI[d]}(only commands that pass requirement checks are shown)${_AI[r]}\n"
+  printf "    ${_AI[d]}%-10s %-3s  %s${_AI[r]}\n" "COMMAND" "AS" "DESCRIPTION"
+  printf "  ${_AI[b]}  CLAUDE CODE BACKENDS${_AI[r]}\n"
+  _ai_cmd_available sonnet    && { _ai_help_cmd_row "sonnet" "s" "Claude Code with Claude Sonnet"; printed=1; }
+  _ai_cmd_available haiku     && { _ai_help_cmd_row "haiku" "h" "Claude Code with Claude Haiku"; printed=1; }
+  _ai_cmd_available opus      && { _ai_help_cmd_row "opus" "o" "Claude Code with Claude Opus"; printed=1; }
+  _ai_cmd_available glm       && { _ai_help_cmd_row "glm" "g" "Claude Code via Z.ai GLM-4.7"; printed=1; }
+  _ai_cmd_available kimi      && { _ai_help_cmd_row "kimi" "k" "Claude Code via Moonshot Kimi K2.5"; printed=1; }
+  _ai_cmd_available mini      && { _ai_help_cmd_row "mini" "m" "Claude Code via MiniMax M2.1"; printed=1; }
+  _ai_cmd_available openrouter && { _ai_help_cmd_row "openrouter" "or" "Claude Code via OpenRouter (--model supported)"; printed=1; }
+  _ai_cmd_available ollama    && { _ai_help_cmd_row "ollama" "ol" "Claude Code via local Ollama (--model supported)"; printed=1; }
+  _ai_cmd_available custom    && { _ai_help_cmd_row "custom" "cu" "Claude Code via custom endpoint (--model --endpoint --apikey)"; printed=1; }
+  printf "  ${_AI[b]}  STANDALONE CLIS${_AI[r]}\n"
+  _ai_cmd_available codex     && { _ai_help_cmd_row "codex" "c" "OpenAI Codex CLI"; printed=1; }
+  _ai_cmd_available gemini    && { _ai_help_cmd_row "gemini" "ge" "Gemini CLI (--yolo)"; printed=1; }
+  _ai_cmd_available cp        && { _ai_help_cmd_row "copilot" "cp" "GitHub Copilot CLI"; printed=1; }
+  _ai_cmd_available oc        && { _ai_help_cmd_row "opencode" "oc" "OpenCode CLI (--model --review)"; printed=1; }
+  printf "  ${_AI[b]}  UTILITIES${_AI[r]}\n"
+  _ai_cmd_available last      && { _ai_help_cmd_row "last" "l" "Re-run last provider"; printed=1; }
+  _ai_help_cmd_row "help" "-h" "Show help and status"
+  (( printed == 0 )) && printf "    ${_AI[yellow]}⚠ No providers available yet. Configure keys/tools below.${_AI[r]}\n"
   printf "\n"
   printf "  ${_AI[b]}EXAMPLES${_AI[r]}\n"
-  printf "    ${_AI[d]}ai sonnet \"explain this code\"${_AI[r]}\n"
-  printf "    ${_AI[d]}ai or --model anthropic/claude-opus-4 \"analyze\"${_AI[r]}\n"
-  printf "    ${_AI[d]}ai ol --model llama3.2 \"quick question\"${_AI[r]}\n"
-  printf "    ${_AI[d]}ai custom --model gpt-4o --endpoint https://api.example.com --apikey sk-...${_AI[r]}\n"
-  printf "    ${_AI[d]}ai oc                                     # opencode TUI (build agent)${_AI[r]}\n"
-  printf "    ${_AI[d]}ai oc --review                            # review uncommitted or branch changes${_AI[r]}\n"
-  printf "    ${_AI[d]}ai last                                   # re-run last used${_AI[r]}\n"
+  printf "    ${_AI[d]}# Long-form commands${_AI[r]}\n"
+  _ai_cmd_available sonnet    && { printf "    ${_AI[d]}ai sonnet \"review this diff for bugs\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available haiku     && { printf "    ${_AI[d]}ai haiku \"summarize this error log\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available glm       && { printf "    ${_AI[d]}ai glm \"design a rollback strategy\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available kimi      && { printf "    ${_AI[d]}ai kimi \"draft migration plan for this repo\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available openrouter && { printf "    ${_AI[d]}ai openrouter --model anthropic/claude-opus-4 \"analyze this architecture\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available ollama    && { printf "    ${_AI[d]}ai ollama --model qwen2.5-coder:14b \"write unit tests for utils\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available custom    && { printf "    ${_AI[d]}ai custom --model gpt-4o --endpoint https://api.example.com --apikey sk-... \"explain this stack trace\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available codex     && { printf "    ${_AI[d]}ai codex \"refactor this function safely\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available gemini    && { printf "    ${_AI[d]}ai gemini \"summarize this PR\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available cp        && { printf "    ${_AI[d]}ai copilot \"create release notes from commits\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available oc        && { printf "    ${_AI[d]}ai opencode --review${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available last      && { printf "    ${_AI[d]}ai last${_AI[r]}\n"; ((example_count++)); }
+  printf "    ${_AI[d]}# Shorthand aliases${_AI[r]}\n"
+  _ai_cmd_available sonnet    && { printf "    ${_AI[d]}ai s \"review this diff for bugs\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available haiku     && { printf "    ${_AI[d]}ai h \"summarize this error log\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available glm       && { printf "    ${_AI[d]}ai g \"design a rollback strategy\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available kimi      && { printf "    ${_AI[d]}ai k \"draft migration plan for this repo\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available openrouter && { printf "    ${_AI[d]}ai or --model anthropic/claude-opus-4 \"analyze this architecture\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available ollama    && { printf "    ${_AI[d]}ai ol --model qwen2.5-coder:14b \"write unit tests for utils\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available custom    && { printf "    ${_AI[d]}ai cu --model gpt-4o --endpoint https://api.example.com --apikey sk-... \"explain this stack trace\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available codex     && { printf "    ${_AI[d]}ai c \"refactor this function safely\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available gemini    && { printf "    ${_AI[d]}ai ge \"summarize this PR\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available cp        && { printf "    ${_AI[d]}ai cp \"create release notes from commits\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available oc        && { printf "    ${_AI[d]}ai oc --review${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available last      && { printf "    ${_AI[d]}ai l${_AI[r]}\n"; ((example_count++)); }
+  (( example_count == 0 )) && printf "    ${_AI[d]}ai help${_AI[r]}\n"
   printf "\n"
   printf "  ${_AI[b]}STATUS${_AI[r]}\n"
-  printf "    $(_ai_check_cmd claude) Claude (cli)           $(_ai_check GLM_API_KEY) GLM_API_KEY\n"
-  printf "    $(_ai_check OPENROUTER_API_KEY) OPENROUTER_API_KEY     $(_ai_check MINIMAX_API_KEY) MINIMAX_API_KEY\n"
-  printf "    $(_ai_check OPENAI_API_KEY) OPENAI_API_KEY         $(_ai_check GEMINI_API_KEY) GEMINI_API_KEY\n"
-  printf "    $(_ai_check_ollama) Ollama (localhost)     $(_ai_check_cmd opencode) opencode (cli)\n"
-  printf "    $(_ai_check_cmd copilot) copilot (cli)\n"
+  _ai_help_status_row "$(_ai_check_cmd claude)" "claude (cli)" "$(_ai_check_cmd codex)" "codex (cli)"
+  _ai_help_status_row "$(_ai_check_cmd gemini)" "gemini (cli)" "$(_ai_check_cmd copilot)" "copilot (cli)"
+  _ai_help_status_row "$(_ai_check_cmd opencode)" "opencode (cli)" "$(_ai_check_ollama)" "ollama (localhost)"
+  _ai_help_status_row "$(_ai_check GLM_API_KEY)" "GLM_API_KEY" "$(_ai_check KIMI_API_KEY)" "KIMI_API_KEY"
+  _ai_help_status_row "$(_ai_check MINIMAX_API_KEY)" "MINIMAX_API_KEY" "$(_ai_check OPENROUTER_API_KEY)" "OPENROUTER_API_KEY"
+  _ai_help_status_row "$(_ai_check OPENAI_API_KEY)" "OPENAI_API_KEY" "$(_ai_check GEMINI_API_KEY)" "GEMINI_API_KEY"
   printf "\n"
 }
 
@@ -337,13 +416,14 @@ ai() {
     haiku|h)        _ai_run_claude haiku "$@" ;;
     opus|o)         _ai_run_claude opus "$@" ;;
     glm|g)          _ai_run_provider glm "$@" ;;
+    kimi|k)         _ai_run_provider kimi "$@" ;;
     mini|m)         _ai_run_provider mini "$@" ;;
-    or)             _ai_run_provider or "$@" ;;
-    ol)             _ai_run_provider ol "$@" ;;
+    or|openrouter)  _ai_run_provider or "$@" ;;
+    ol|ollama)      _ai_run_provider ol "$@" ;;
     codex|c)        _ai_run_codex "$@" ;;
     gemini|ge)      _ai_run_gemini "$@" ;;
     copilot|cp)     _ai_run_copilot "$@" ;;
-    oc)             _ai_run_opencode "$@" ;;
+    oc|opencode)    _ai_run_opencode "$@" ;;
     custom|cu)      _ai_run_custom "$@" ;;
     last|l)
       local last_file="${TMPDIR:-/tmp}/.ai_last_provider"
@@ -371,10 +451,14 @@ _ai_completions() {
     'o:Claude Opus'
     'glm:GLM-4.7'
     'g:GLM-4.7'
+    'kimi:Kimi K2.5 via Moonshot'
+    'k:Kimi K2.5 via Moonshot'
     'mini:MiniMax M2.1'
     'm:MiniMax M2.1'
     'or:OpenRouter'
+    'openrouter:OpenRouter'
     'ol:Ollama'
+    'ollama:Ollama'
     'codex:Codex'
     'c:Codex'
     'gemini:Gemini CLI'
@@ -382,6 +466,7 @@ _ai_completions() {
     'copilot:GitHub Copilot'
     'cp:GitHub Copilot'
     'oc:OpenCode (build agent)'
+    'opencode:OpenCode (build agent)'
     'custom:Custom endpoint'
     'cu:Custom endpoint'
     'last:Re-run last provider'

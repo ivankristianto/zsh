@@ -125,32 +125,61 @@ Primary command:
 ai [command] [args...]
 ```
 
-| Command   | Alias | Purpose                                          | Example                                                        |
-| --------- | ----- | ------------------------------------------------ | -------------------------------------------------------------- |
-| `ai`      | -     | Open interactive `fzf` provider picker           | `ai`                                                           |
-| `sonnet`  | `s`   | Run Claude Sonnet                                | `ai sonnet "review this"`                                      |
-| `haiku`   | `h`   | Run Claude Haiku                                 | `ai haiku "summarize"`                                         |
-| `opus`    | `o`   | Run Claude Opus                                  | `ai opus "deep analysis"`                                      |
-| `glm`     | `g`   | Run GLM provider via Z.ai endpoint               | `ai glm "hello"`                                               |
-| `mini`    | `m`   | Run MiniMax provider                             | `ai mini "hello"`                                              |
-| `or`      | -     | Run OpenRouter provider (`--model` supported)    | `ai or --model anthropic/claude-opus-4 "check"`                |
-| `ol`      | -     | Run Ollama provider (`--model` supported)        | `ai ol --model llama3.2 "quick task"`                          |
-| `codex`   | `c`   | Run OpenAI Codex CLI                             | `ai codex`                                                     |
-| `gemini`  | `ge`  | Run Gemini CLI in yolo mode                      | `ai gemini`                                                    |
-| `copilot` | `cp`  | Run GitHub Copilot CLI                           | `ai copilot`                                                   |
-| `oc`      | -     | Run OpenCode build agent (`--model`, `--review`) | `ai oc --review`                                               |
-| `custom`  | `cu`  | Run custom Anthropic-compatible endpoint         | `ai custom --model gpt-4o --endpoint https://... --apikey ...` |
-| `last`    | `l`   | Re-run last selected provider                    | `ai last`                                                      |
-| `help`    | `-h`  | Show built-in help and status                    | `ai help`                                                      |
+| Command      | Alias | Purpose                                                | Example                                                                        |
+| ------------ | ----- | ------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `ai`         | -     | Open interactive `fzf` provider picker                 | `ai`                                                                           |
+| `sonnet`     | `s`   | Claude Code with Claude Sonnet                         | `ai sonnet "review this diff"`                                                 |
+| `haiku`      | `h`   | Claude Code with Claude Haiku                          | `ai haiku "summarize this log"`                                                |
+| `opus`       | `o`   | Claude Code with Claude Opus                           | `ai opus "deep architecture analysis"`                                         |
+| `glm`        | `g`   | Claude Code via GLM-4.7 (Z.ai)                         | `ai glm "plan rollout steps"`                                                  |
+| `kimi`       | `k`   | Claude Code via Kimi K2.5 (Moonshot)                  | `ai k "draft migration plan"`                                                  |
+| `mini`       | `m`   | Claude Code via MiniMax M2.1                           | `ai mini "quick fix proposal"`                                                 |
+| `openrouter` | `or`  | Claude Code via OpenRouter (`--model` supported)       | `ai openrouter --model anthropic/claude-opus-4 "check this service design"`   |
+| `ollama`     | `ol`  | Claude Code via local Ollama (`--model` supported)     | `ai ollama --model qwen2.5-coder:14b "write unit tests"`                      |
+| `custom`     | `cu`  | Claude Code via custom Anthropic-compatible endpoint   | `ai custom --model gpt-4o --endpoint https://... --apikey ... "debug error"`  |
+| `codex`      | `c`   | OpenAI Codex CLI                                       | `ai codex "refactor this function"`                                            |
+| `gemini`     | `ge`  | Gemini CLI in yolo mode                                | `ai gemini "summarize changes"`                                                |
+| `copilot`    | `cp`  | GitHub Copilot CLI                                     | `ai copilot "generate release notes"`                                          |
+| `opencode`   | `oc`  | OpenCode build agent (`--model`, `--review`)           | `ai opencode --review`                                                         |
+| `last`       | `l`   | Re-run last selected provider                          | `ai last`                                                                      |
+| `help`       | `-h`  | Show built-in help and status (shows only ready cmds)  | `ai help`                                                                      |
 
 Required tooling/env depends on command:
 
-- `claude` for Anthropic-compatible routes (`sonnet/haiku/opus/glm/mini/or/ol/custom`)
-- `codex` + `OPENAI_API_KEY` for `ai codex`
-- `gemini` + `GEMINI_API_KEY` for `ai gemini`
-- `copilot` for `ai copilot`
-- `opencode` for `ai oc`
-- `fzf` for interactive picker mode (`ai` with no subcommand)
+- Claude Code backends (`sonnet/haiku/opus/glm/kimi/mini/openrouter/ollama/custom`) require `claude`
+- `ai glm` also requires `GLM_API_KEY`
+- `ai k` (`ai kimi`) also requires `KIMI_API_KEY`
+- `ai mini` also requires `MINIMAX_API_KEY`
+- `ai openrouter` (`ai or`) also requires `OPENROUTER_API_KEY`
+- `ai codex` requires `codex` + `OPENAI_API_KEY`
+- `ai gemini` requires `gemini` + `GEMINI_API_KEY`
+- `ai copilot` requires `copilot`
+- `ai opencode` (`ai oc`) requires `opencode`
+- Interactive picker (`ai`) requires `fzf`
+
+Examples (long + shorthand):
+
+```zsh
+# Claude Code backends
+ai sonnet "review this diff for bugs"
+ai s "review this diff for bugs"
+ai openrouter --model anthropic/claude-opus-4 "analyze this architecture"
+ai or --model anthropic/claude-opus-4 "analyze this architecture"
+ai custom --model gpt-4o --endpoint https://api.example.com --apikey sk-... "explain this stack trace"
+ai cu --model gpt-4o --endpoint https://api.example.com --apikey sk-... "explain this stack trace"
+
+# Standalone CLIs
+ai codex "refactor this function safely"
+ai c "refactor this function safely"
+ai copilot "create release notes from commits"
+ai cp "create release notes from commits"
+ai opencode --review
+ai oc --review
+
+# Utility
+ai last
+ai l
+```
 
 ### General Functions (`functions/functions.zsh`)
 
@@ -189,6 +218,7 @@ Minimal example:
 ```env
 OPENAI_API_KEY="your-openai-api-key"
 OPENROUTER_API_KEY="your-openrouter-api-key"
+KIMI_API_KEY="your-kimi-api-key"
 ```
 
 ## DevX Bootstrap
@@ -356,4 +386,4 @@ Secrets not available in commands:
 
 - confirm `.env` exists and contains valid `KEY="value"` lines
 - run `source ~/.zsh/keys.sh`
-- verify with `printenv | rg 'OPENAI_API_KEY|OPENROUTER_API_KEY'`
+- verify with `printenv | rg 'OPENAI_API_KEY|OPENROUTER_API_KEY|KIMI_API_KEY'`
