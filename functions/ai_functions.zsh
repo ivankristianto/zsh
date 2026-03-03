@@ -341,56 +341,42 @@ _ai_help() {
   printf "    ai ${_AI[cyan]}<cmd>${_AI[r]} [args...]     launch provider directly\n"
   printf "\n"
   printf "  ${_AI[b]}COMMANDS${_AI[r]}\n"
-  printf "    ${_AI[d]}(only commands that pass requirement checks are shown)${_AI[r]}\n"
-  printf "    ${_AI[d]}%-10s %-3s  %s${_AI[r]}\n" "COMMAND" "AS" "DESCRIPTION"
-  printf "  ${_AI[b]}  CLAUDE CODE BACKENDS${_AI[r]}\n"
-  _ai_cmd_available sonnet    && { _ai_help_cmd_row "sonnet" "s" "Claude Code with Claude Sonnet"; printed=1; }
-  _ai_cmd_available haiku     && { _ai_help_cmd_row "haiku" "h" "Claude Code with Claude Haiku"; printed=1; }
-  _ai_cmd_available opus      && { _ai_help_cmd_row "opus" "o" "Claude Code with Claude Opus"; printed=1; }
-  _ai_cmd_available glm       && { _ai_help_cmd_row "glm" "g" "Claude Code via Z.ai GLM-4.7"; printed=1; }
-  _ai_cmd_available kimi      && { _ai_help_cmd_row "kimi" "k" "Claude Code via Moonshot Kimi K2.5"; printed=1; }
-  _ai_cmd_available mini      && { _ai_help_cmd_row "mini" "m" "Claude Code via MiniMax M2.1"; printed=1; }
-  _ai_cmd_available openrouter && { _ai_help_cmd_row "openrouter" "or" "Claude Code via OpenRouter (--model supported)"; printed=1; }
-  _ai_cmd_available ollama    && { _ai_help_cmd_row "ollama" "ol" "Claude Code via local Ollama (--model supported)"; printed=1; }
-  _ai_cmd_available custom    && { _ai_help_cmd_row "custom" "cu" "Claude Code via custom endpoint (--model --endpoint --apikey)"; printed=1; }
-  printf "  ${_AI[b]}  STANDALONE CLIS${_AI[r]}\n"
+  printf "  ${_AI[b]}  CLAUDE CODE${_AI[r]}\n"
+  _ai_cmd_available sonnet    && { _ai_help_cmd_row "sonnet" "s" "Claude Sonnet"; printed=1; }
+  _ai_cmd_available haiku     && { _ai_help_cmd_row "haiku" "h" "Claude Haiku"; printed=1; }
+  _ai_cmd_available opus      && { _ai_help_cmd_row "opus" "o" "Claude Opus"; printed=1; }
+  _ai_cmd_available glm       && { _ai_help_cmd_row "glm" "g" "GLM-4.7 (Z.ai)"; printed=1; }
+  _ai_cmd_available kimi      && { _ai_help_cmd_row "kimi" "k" "Kimi K2.5 (Moonshot)"; printed=1; }
+  _ai_cmd_available mini      && { _ai_help_cmd_row "mini" "m" "MiniMax M2.1"; printed=1; }
+  _ai_cmd_available openrouter && { _ai_help_cmd_row "openrouter" "or" "OpenRouter (--model)"; printed=1; }
+  _ai_cmd_available ollama    && { _ai_help_cmd_row "ollama" "ol" "Ollama local (--model)"; printed=1; }
+  _ai_cmd_available custom    && { _ai_help_cmd_row "custom" "cu" "Custom endpoint"; printed=1; }
+  printf "\n"
+  printf "  ${_AI[b]}  OTHERS${_AI[r]}\n"
   _ai_cmd_available codex     && { _ai_help_cmd_row "codex" "c" "OpenAI Codex CLI"; printed=1; }
   _ai_cmd_available gemini    && { _ai_help_cmd_row "gemini" "ge" "Gemini CLI (--yolo)"; printed=1; }
   _ai_cmd_available cp        && { _ai_help_cmd_row "copilot" "cp" "GitHub Copilot CLI"; printed=1; }
   _ai_cmd_available oc        && { _ai_help_cmd_row "opencode" "oc" "OpenCode CLI (--model --review)"; printed=1; }
+  printf "\n"
   printf "  ${_AI[b]}  UTILITIES${_AI[r]}\n"
   _ai_cmd_available last      && { _ai_help_cmd_row "last" "l" "Re-run last provider"; printed=1; }
   _ai_help_cmd_row "help" "-h" "Show help and status"
   (( printed == 0 )) && printf "    ${_AI[yellow]}⚠ No providers available yet. Configure keys/tools below.${_AI[r]}\n"
   printf "\n"
   printf "  ${_AI[b]}EXAMPLES${_AI[r]}\n"
-  printf "    ${_AI[d]}# Long-form commands${_AI[r]}\n"
-  _ai_cmd_available sonnet    && { printf "    ${_AI[d]}ai sonnet \"review this diff for bugs\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available haiku     && { printf "    ${_AI[d]}ai haiku \"summarize this error log\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available glm       && { printf "    ${_AI[d]}ai glm \"design a rollback strategy\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available kimi      && { printf "    ${_AI[d]}ai kimi \"draft migration plan for this repo\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available openrouter && { printf "    ${_AI[d]}ai openrouter --model anthropic/claude-opus-4 \"analyze this architecture\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available ollama    && { printf "    ${_AI[d]}ai ollama --model qwen2.5-coder:14b \"write unit tests for utils\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available custom    && { printf "    ${_AI[d]}ai custom --model gpt-4o --endpoint https://api.example.com --apikey sk-... \"explain this stack trace\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available codex     && { printf "    ${_AI[d]}ai codex \"refactor this function safely\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available gemini    && { printf "    ${_AI[d]}ai gemini \"summarize this PR\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available cp        && { printf "    ${_AI[d]}ai copilot \"create release notes from commits\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available oc        && { printf "    ${_AI[d]}ai opencode --review${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available last      && { printf "    ${_AI[d]}ai last${_AI[r]}\n"; ((example_count++)); }
-  printf "    ${_AI[d]}# Shorthand aliases${_AI[r]}\n"
-  _ai_cmd_available sonnet    && { printf "    ${_AI[d]}ai s \"review this diff for bugs\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available haiku     && { printf "    ${_AI[d]}ai h \"summarize this error log\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available glm       && { printf "    ${_AI[d]}ai g \"design a rollback strategy\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available kimi      && { printf "    ${_AI[d]}ai k \"draft migration plan for this repo\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available openrouter && { printf "    ${_AI[d]}ai or --model anthropic/claude-opus-4 \"analyze this architecture\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available ollama    && { printf "    ${_AI[d]}ai ol --model qwen2.5-coder:14b \"write unit tests for utils\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available custom    && { printf "    ${_AI[d]}ai cu --model gpt-4o --endpoint https://api.example.com --apikey sk-... \"explain this stack trace\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available codex     && { printf "    ${_AI[d]}ai c \"refactor this function safely\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available gemini    && { printf "    ${_AI[d]}ai ge \"summarize this PR\"${_AI[r]}\n"; ((example_count++)); }
-  _ai_cmd_available cp        && { printf "    ${_AI[d]}ai cp \"create release notes from commits\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available sonnet    && { printf "    ${_AI[d]}ai s \"review this diff\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available haiku     && { printf "    ${_AI[d]}ai h \"summarize this error\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available glm       && { printf "    ${_AI[d]}ai g \"design a rollback\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available kimi      && { printf "    ${_AI[d]}ai k \"plan migration\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available openrouter && { printf "    ${_AI[d]}ai or --model anthropic/claude-opus-4 \"analyze this\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available ollama    && { printf "    ${_AI[d]}ai ol --model qwen2.5-coder:14b \"write tests\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available codex     && { printf "    ${_AI[d]}ai c \"refactor this\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available gemini    && { printf "    ${_AI[d]}ai ge \"summarize PR\"${_AI[r]}\n"; ((example_count++)); }
+  _ai_cmd_available cp        && { printf "    ${_AI[d]}ai cp \"create release notes\"${_AI[r]}\n"; ((example_count++)); }
   _ai_cmd_available oc        && { printf "    ${_AI[d]}ai oc --review${_AI[r]}\n"; ((example_count++)); }
   _ai_cmd_available last      && { printf "    ${_AI[d]}ai l${_AI[r]}\n"; ((example_count++)); }
-  (( example_count == 0 )) && printf "    ${_AI[d]}ai help${_AI[r]}\n"
+  _ai_cmd_available custom    && { printf "    ${_AI[d]}ai cu --model <m> --endpoint <url> --apikey <key> \"prompt\"${_AI[r]}\n"; ((example_count++)); }
+  (( example_count == 0 )) && printf "    ${_AI[d]}ai -h${_AI[r]}\n"
   printf "\n"
   printf "  ${_AI[b]}STATUS${_AI[r]}\n"
   _ai_help_status_row "$(_ai_check_cmd claude)" "claude (cli)" "$(_ai_check_cmd codex)" "codex (cli)"
