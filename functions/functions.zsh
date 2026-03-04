@@ -71,6 +71,19 @@ switchphp() {
 # Daily software update helper
 # Short command: up
 up() {
+    if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        local git_upstream
+        git_upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)"
+        if [[ -n "$git_upstream" ]]; then
+            echo "==> Git pull (${git_upstream})"
+            git pull --ff-only || echo "    ⚠ git pull failed (continuing)" >&2
+        else
+            echo "==> Git: no upstream tracking branch; skipping pull"
+        fi
+    else
+        echo "==> Git: not in a git repository; skipping pull"
+    fi
+
     if ! command -v brew >/dev/null 2>&1; then
         echo "brew not found; skipping Homebrew updates" >&2
         return 1

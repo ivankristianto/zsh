@@ -131,26 +131,26 @@ Implementation layout:
 - Modular files: `functions/ai/*.zsh`
 - Provider domains: `functions/ai/providers/{claude,codex,gemini,ollama,copilot,opencode}.zsh`
 
-| Command      | Alias | Purpose                                                | Example                                                                        |
-| ------------ | ----- | ------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `ai`         | -     | Open interactive `fzf` provider picker                 | `ai`                                                                           |
-| `sonnet`     | `s`   | Claude Code with Claude Sonnet                         | `ai sonnet "review this diff"`                                                 |
-| `haiku`      | `h`   | Claude Code with Claude Haiku                          | `ai haiku "summarize this log"`                                                |
-| `opus`       | `o`   | Claude Code with Claude Opus                           | `ai opus "deep architecture analysis"`                                         |
-| `glm`        | `g`   | Claude Code via GLM-4.7 (Z.ai)                         | `ai glm "plan rollout steps"`                                                  |
-| `kimi`       | `k`   | Claude Code via Kimi K2.5 (Moonshot)                  | `ai k "draft migration plan"`                                                  |
-| `mini`       | `m`   | Claude Code via MiniMax M2.1                           | `ai mini "quick fix proposal"`                                                 |
-| `openrouter` | `or`  | Claude Code via OpenRouter (`--model` supported)       | `ai openrouter --model anthropic/claude-opus-4 "check this service design"`   |
-| `ollama`     | `ol`  | Claude Code via local Ollama (`--model` supported)     | `ai ollama --model qwen2.5-coder:14b "write unit tests"`                      |
-| `custom`     | `cu`  | Claude Code via custom Anthropic-compatible endpoint   | `ai custom --model gpt-4o --endpoint https://... --apikey ... "debug error"`  |
-| `codex`      | `c`   | OpenAI Codex CLI                                       | `ai codex "refactor this function"`                                            |
-| `gemini`     | `ge`  | Gemini CLI in yolo mode                                | `ai gemini "summarize changes"`                                                |
-| `copilot`    | `cp`  | GitHub Copilot CLI                                     | `ai copilot "generate release notes"`                                          |
-| `opencode`   | `oc`  | OpenCode build agent (`--model`, `--review`)           | `ai opencode --review`                                                         |
-| `install`    | `i`   | Install a supported coding agent CLI via npm global    | `ai install codex`                                                             |
-| `last`       | `l`   | Re-run last selected provider                          | `ai last`                                                                      |
-| `help`       | `-h`  | Show built-in help and status (shows only ready cmds)  | `ai help`                                                                      |
-| `<cmd> ship` | -     | Interactive git assistant (commit/push/PR)             | `ai g ship`                                                                    |
+| Command      | Alias | Purpose                                               | Example                                                                      |
+| ------------ | ----- | ----------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `ai`         | -     | Open interactive `fzf` provider picker                | `ai`                                                                         |
+| `sonnet`     | `s`   | Claude Code with Claude Sonnet                        | `ai sonnet "review this diff"`                                               |
+| `haiku`      | `h`   | Claude Code with Claude Haiku                         | `ai haiku "summarize this log"`                                              |
+| `opus`       | `o`   | Claude Code with Claude Opus                          | `ai opus "deep architecture analysis"`                                       |
+| `glm`        | `g`   | Claude Code via GLM-4.7 (Z.ai)                        | `ai glm "plan rollout steps"`                                                |
+| `kimi`       | `k`   | Claude Code via Kimi K2.5 (Moonshot)                  | `ai k "draft migration plan"`                                                |
+| `mini`       | `m`   | Claude Code via MiniMax M2.1                          | `ai mini "quick fix proposal"`                                               |
+| `openrouter` | `or`  | Claude Code via OpenRouter (`--model` supported)      | `ai openrouter --model anthropic/claude-opus-4 "check this service design"`  |
+| `ollama`     | `ol`  | Claude Code via local Ollama (`--model` supported)    | `ai ollama --model qwen2.5-coder:14b "write unit tests"`                     |
+| `custom`     | `cu`  | Claude Code via custom Anthropic-compatible endpoint  | `ai custom --model gpt-4o --endpoint https://... --apikey ... "debug error"` |
+| `codex`      | `c`   | OpenAI Codex CLI                                      | `ai codex "refactor this function"`                                          |
+| `gemini`     | `ge`  | Gemini CLI in yolo mode                               | `ai gemini "summarize changes"`                                              |
+| `copilot`    | `cp`  | GitHub Copilot CLI                                    | `ai copilot "generate release notes"`                                        |
+| `opencode`   | `oc`  | OpenCode build agent (`--model`, `--review`)          | `ai opencode --review`                                                       |
+| `install`    | `i`   | Install a supported coding agent CLI via npm global   | `ai install codex`                                                           |
+| `last`       | `l`   | Re-run last selected provider                         | `ai last`                                                                    |
+| `help`       | `-h`  | Show built-in help and status (shows only ready cmds) | `ai help`                                                                    |
+| `<cmd> ship` | -     | Interactive git assistant (commit/push/PR)            | `ai g ship`                                                                  |
 
 Required tooling/env depends on command:
 
@@ -218,6 +218,7 @@ ai or ship     # OpenRouter
 ```
 
 The AI will:
+
 1. Review your changes
 2. Help craft commit messages
 3. Commit and push
@@ -225,12 +226,12 @@ The AI will:
 
 ### General Functions (`functions/functions.zsh`)
 
-| Function    | Purpose                                                                            | Example               |
-| ----------- | ---------------------------------------------------------------------------------- | --------------------- |
-| `tt`        | Send Telegram message using `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`            | `tt -m "deploy done"` |
-| `k2-dev`    | Shortcut SSH/orb connect helper for `k2-dev`                                       | `k2-dev`              |
-| `switchphp` | Switch linked Homebrew PHP version                                                 | `switchphp 8.3`       |
-| `up`        | Run daily software refresh (`brew upgrade`, `brew cleanup`, npm globals, Node LTS) | `up`                  |
+| Function    | Purpose                                                                         | Example               |
+| ----------- | ------------------------------------------------------------------------------- | --------------------- |
+| `tt`        | Send Telegram message using `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`         | `tt -m "deploy done"` |
+| `k2-dev`    | Shortcut SSH/orb connect helper for `k2-dev`                                    | `k2-dev`              |
+| `switchphp` | Switch linked Homebrew PHP version                                              | `switchphp 8.3`       |
+| `up`        | Run daily software refresh (current repo pull, Homebrew, npm globals, Node LTS) | `up`                  |
 
 Daily update command details:
 
@@ -240,9 +241,10 @@ up
 
 `up` executes:
 
+- `git pull --ff-only` (when inside a git repo and tracking branch exists)
 - `brew upgrade`
 - `brew cleanup`
-- `npm install -g @google/gemini-cli @openai/codex @github/copilot`
+- `npm install -g <all currently installed global npm packages except npm>`
 - `nvm install --lts` (when `nvm` is available)
 
 ## Secrets Management
