@@ -125,6 +125,12 @@ Primary command:
 ai [command] [args...]
 ```
 
+Implementation layout:
+
+- Entry loader: `functions/ai_functions.zsh`
+- Modular files: `functions/ai/*.zsh`
+- Provider domains: `functions/ai/providers/{claude,codex,gemini,ollama,copilot,opencode}.zsh`
+
 | Command      | Alias | Purpose                                                | Example                                                                        |
 | ------------ | ----- | ------------------------------------------------------ | ------------------------------------------------------------------------------ |
 | `ai`         | -     | Open interactive `fzf` provider picker                 | `ai`                                                                           |
@@ -141,6 +147,7 @@ ai [command] [args...]
 | `gemini`     | `ge`  | Gemini CLI in yolo mode                                | `ai gemini "summarize changes"`                                                |
 | `copilot`    | `cp`  | GitHub Copilot CLI                                     | `ai copilot "generate release notes"`                                          |
 | `opencode`   | `oc`  | OpenCode build agent (`--model`, `--review`)           | `ai opencode --review`                                                         |
+| `install`    | `i`   | Install a supported coding agent CLI via npm global    | `ai install codex`                                                             |
 | `last`       | `l`   | Re-run last selected provider                          | `ai last`                                                                      |
 | `help`       | `-h`  | Show built-in help and status (shows only ready cmds)  | `ai help`                                                                      |
 | `<cmd> ship` | -     | Interactive git assistant (commit/push/PR)             | `ai g ship`                                                                    |
@@ -180,7 +187,20 @@ ai oc --review
 # Utility
 ai last
 ai l
+ai install claude
+ai install codex --dry-run
 ```
+
+### AI Helper Notes
+
+- Repo helper link: https://github.com/ivankristianto/zsh
+- In-shell installer supports:
+  - `ai install claude`
+  - `ai install codex`
+  - `ai install gemini`
+  - `ai install ollama`
+  - `ai install copilot`
+  - `ai install opencode`
 
 ### Git Workflow (`ai ship`)
 
@@ -372,7 +392,7 @@ SPACESHIP_USER_SHOW=always
 Validate zsh syntax:
 
 ```zsh
-zsh -n ~/.zsh/init.zsh ~/.zsh/settings.zsh ~/.zsh/keys.zsh ~/.zsh/themes/.zsh_theme ~/.zsh/plugins/plugins.zsh
+zsh -n ~/.zsh/init.zsh ~/.zsh/settings.zsh ~/.zsh/keys.zsh ~/.zsh/themes/.zsh_theme ~/.zsh/plugins/plugins.zsh ~/.zsh/functions/ai_functions.zsh ~/.zsh/functions/ai/*.zsh ~/.zsh/functions/ai/providers/*.zsh
 ```
 
 Verify secrets load:
@@ -385,6 +405,12 @@ Check current Spaceship values:
 
 ```zsh
 zsh -lic 'print -r -- "HOST_SHOW=$SPACESHIP_HOST_SHOW TIME_FORMAT=$SPACESHIP_TIME_FORMAT"'
+```
+
+Run AI function tests:
+
+```zsh
+zsh ~/.zsh/tests/ai_functions_test.zsh
 ```
 
 ## Troubleshooting

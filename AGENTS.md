@@ -53,12 +53,25 @@ Keep shell startup predictable, secure, and fast while preserving current UX.
 - Use real repo URL in setup docs: `git@github.com:ivankristianto/zsh.git`.
 - If behavior changes, update both config and README in the same change.
 
+## Dev Notes: Adding A New Coding Agent
+
+When adding a new `ai` agent, keep the modular layout and domain split:
+
+1. Add/extend provider implementation in `functions/ai/providers/*.zsh`.
+2. Register command routing in `functions/ai/ai.zsh`.
+3. Update command visibility in `functions/ai/help.zsh` and picker rows in `functions/ai/picker.zsh`.
+4. Update completion entries in `functions/ai/completion.zsh`.
+5. If installable, map npm package in `functions/ai/install.zsh` (`ai install <agent>`).
+6. Keep `functions/ai_functions.zsh` as loader only; do not move runtime logic back into a monolith.
+7. Update `README.md` AI command table/examples in the same change.
+8. Keep helper notes link current: `https://github.com/ivankristianto/zsh`.
+
 ## Verification Checklist
 
 Run these after relevant edits:
 
 1. Syntax:
-   `zsh -n ~/.zsh/init.zsh ~/.zsh/settings.zsh ~/.zsh/keys.zsh ~/.zsh/themes/.zsh_theme ~/.zsh/plugins/plugins.zsh`
+   `zsh -n ~/.zsh/init.zsh ~/.zsh/settings.zsh ~/.zsh/keys.zsh ~/.zsh/themes/.zsh_theme ~/.zsh/plugins/plugins.zsh ~/.zsh/functions/ai_functions.zsh ~/.zsh/functions/ai/*.zsh ~/.zsh/functions/ai/providers/*.zsh`
 
 2. Secrets load:
    `zsh -lc 'source ~/.zsh/keys.zsh; [[ -n "$OPENAI_API_KEY" ]] && echo OK || echo MISSING'`
@@ -66,7 +79,10 @@ Run these after relevant edits:
 3. Prompt config state:
    `zsh -lic 'print -r -- "HOST_SHOW=$SPACESHIP_HOST_SHOW TIME_FORMAT=$SPACESHIP_TIME_FORMAT"'`
 
-4. Git hygiene:
+4. AI tests:
+   `zsh ~/.zsh/tests/ai_functions_test.zsh`
+
+5. Git hygiene:
 
 - Confirm `.env` is not tracked.
 - Confirm ignored plugin directories are not tracked.
