@@ -30,6 +30,7 @@ ai() {
     mini|m) _ai_run_provider mini "$@" ;;
     or|openrouter) _ai_run_provider or "$@" ;;
     ol|ollama) _ai_run_ollama "$@" ;;
+    ll|llama.cpp|llamacpp|llama) _ai_run_llamacpp "$@" ;;
     codex|c) _ai_run_codex "$@" ;;
     gemini|ge) _ai_run_gemini "$@" ;;
     copilot|cp) _ai_run_copilot "$@" ;;

@@ -129,7 +129,7 @@ Implementation layout:
 
 - Entry loader: `functions/ai_functions.zsh`
 - Modular files: `functions/ai/*.zsh`
-- Provider domains: `functions/ai/providers/{claude,codex,gemini,ollama,copilot,opencode}.zsh`
+- Provider domains: `functions/ai/providers/{claude,ollama,llamacpp,codex,gemini,copilot,opencode}.zsh`
 
 | Command      | Alias | Purpose                                               | Example                                                                      |
 | ------------ | ----- | ----------------------------------------------------- | ---------------------------------------------------------------------------- |
@@ -142,6 +142,7 @@ Implementation layout:
 | `mini`       | `m`   | Claude Code via MiniMax M2.1                          | `ai mini "quick fix proposal"`                                               |
 | `openrouter` | `or`  | Claude Code via OpenRouter (`--model` supported)      | `ai openrouter --model anthropic/claude-opus-4 "check this service design"`  |
 | `ollama`     | `ol`  | Claude Code via local Ollama (`--model` supported)    | `ai ollama --model qwen2.5-coder:14b "write unit tests"`                     |
+| `llama.cpp`  | `ll`  | Claude Code via local llama.cpp (`--model` supported) | `ai llama.cpp --model qwen2.5-coder:14b "write unit tests"`                  |
 | `custom`     | `cu`  | Claude Code via custom Anthropic-compatible endpoint  | `ai custom --model gpt-4o --endpoint https://... --apikey ... "debug error"` |
 | `codex`      | `c`   | OpenAI Codex CLI                                      | `ai codex "refactor this function"`                                          |
 | `gemini`     | `ge`  | Gemini CLI in yolo mode                               | `ai gemini "summarize changes"`                                              |
@@ -154,11 +155,12 @@ Implementation layout:
 
 Required tooling/env depends on command:
 
-- Claude Code backends (`sonnet/haiku/opus/glm/kimi/mini/openrouter/ollama/custom`) require `claude`
+- Claude Code backends (`sonnet/haiku/opus/glm/kimi/mini/openrouter/ollama/llama.cpp/custom`) require `claude`
 - `ai glm` also requires `GLM_API_KEY`
 - `ai k` (`ai kimi`) also requires `KIMI_API_KEY`
 - `ai mini` also requires `MINIMAX_API_KEY`
 - `ai openrouter` (`ai or`) also requires `OPENROUTER_API_KEY`
+- `ai llama.cpp` (`ai ll`) uses hardcoded local Anthropic-compatible values (`http://localhost:8001`, `sk-no-key-required`)
 - `ai codex` requires `codex` + `OPENAI_API_KEY`
 - `ai gemini` requires `gemini` + `GEMINI_API_KEY`
 - `ai copilot` requires `copilot`
@@ -173,6 +175,8 @@ ai sonnet "review this diff for bugs"
 ai s "review this diff for bugs"
 ai openrouter --model anthropic/claude-opus-4 "analyze this architecture"
 ai or --model anthropic/claude-opus-4 "analyze this architecture"
+ai llama.cpp --model qwen2.5-coder:14b "write unit tests"
+ai ll --model qwen2.5-coder:14b "write unit tests"
 ai custom --model gpt-4o --endpoint https://api.example.com --apikey sk-... "explain this stack trace"
 ai cu --model gpt-4o --endpoint https://api.example.com --apikey sk-... "explain this stack trace"
 

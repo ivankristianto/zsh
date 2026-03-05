@@ -46,6 +46,12 @@ Keep shell startup predictable, secure, and fast while preserving current UX.
 - Host section must stay disabled unless user asks otherwise.
 - Time format should avoid hostname expansion (`SPACESHIP_TIME_FORMAT="%D{%H:%M}"`).
 
+### AI Provider Isolation
+
+- Do not export provider-specific runtime auth/base vars globally when they can affect other agents.
+- `llama.cpp` must hardcode its local Anthropic-compatible runtime values inside provider execution only.
+- Do not add `ANTHROPIC_BASE_URL` / `ANTHROPIC_API_KEY` to `keys.zsh`, `.env.example`, or global help/status for `llama.cpp`.
+
 ## Editing Guidelines
 
 - Prefer small, targeted edits.
@@ -65,6 +71,7 @@ When adding a new `ai` agent, keep the modular layout and domain split:
 6. Keep `functions/ai_functions.zsh` as loader only; do not move runtime logic back into a monolith.
 7. Update `README.md` AI command table/examples in the same change.
 8. Keep helper notes link current: `https://github.com/ivankristianto/zsh`.
+9. Keep provider runtime config scoped per provider; avoid global env exports that can leak across agents.
 
 ## Verification Checklist
 

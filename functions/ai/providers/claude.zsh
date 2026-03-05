@@ -6,6 +6,7 @@ typeset -gA _AI_PROVIDERS=(
   [mini]="MINIMAX_API_KEY|https://api.minimax.io/anthropic|MiniMax-M2.1|MiniMax-M2.1|MiniMax-M2.1|MiniMax-M2.1|bmag|MiniMax|0"
   [or]="OPENROUTER_API_KEY|https://openrouter.ai/api|anthropic/claude-sonnet-4|anthropic/claude-sonnet-4|anthropic/claude-sonnet-4|anthropic/claude-sonnet-4|bgreen|OpenRouter|1"
   [ol]="_OLLAMA|http://localhost:11434|glm-5:cloud|glm-5:cloud|glm-5:cloud|glm-5:cloud|blue|Ollama|1"
+  [lc]="_LLAMACPP|http://localhost:8001|llama.cpp|llama.cpp|llama.cpp|llama.cpp|green|llama.cpp|1"
 )
 
 _ai_run_provider() {
@@ -32,12 +33,17 @@ _ai_run_provider() {
   local model_flag="${parts[9]}"
 
   local token
+  local api_key=""
   if [[ "$env_var" == "_OLLAMA" ]]; then
     _ai_has_ollama || {
       printf "${_AI[red]}✗ Ollama unavailable (install ollama and run server at localhost:11434)${_AI[r]}\n"
       return 1
     }
     token="ollama"
+  elif [[ "$env_var" == "_LLAMACPP" ]]; then
+    token="sk-no-key-required"
+    api_key="sk-no-key-required"
+    base_url="http://localhost:8001"
   else
     token="${(P)env_var}"
     [[ -z "$token" ]] && {
@@ -69,7 +75,7 @@ _ai_run_provider() {
 
   ANTHROPIC_AUTH_TOKEN="$token" \
   ANTHROPIC_BASE_URL="$base_url" \
-  ANTHROPIC_API_KEY="" \
+  ANTHROPIC_API_KEY="$api_key" \
   API_TIMEOUT_MS=3000000 \
   ANTHROPIC_MODEL="$model" \
   ANTHROPIC_DEFAULT_HAIKU_MODEL="$haiku" \

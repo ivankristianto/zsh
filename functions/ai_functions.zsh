@@ -7,6 +7,7 @@ for _ai_file in \
   core.zsh \
   providers/claude.zsh \
   providers/ollama.zsh \
+  providers/llamacpp.zsh \
   providers/codex.zsh \
   providers/gemini.zsh \
   providers/copilot.zsh \

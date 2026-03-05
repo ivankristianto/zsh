@@ -22,7 +22,8 @@ _ai_last_file() {
 }
 
 _ai_has_env() {
-  [[ -n "${(P)1}" ]]
+  local var_name="$1"
+  [[ -n "${(P)var_name-}" ]]
 }
 
 _ai_has_cmd() {
@@ -109,6 +110,7 @@ _ai_cmd_available() {
     mini|m)                   _ai_has_cmd claude && _ai_has_env MINIMAX_API_KEY ;;
     or|openrouter)            _ai_has_cmd claude && _ai_has_env OPENROUTER_API_KEY ;;
     ol|ollama)                _ai_has_cmd claude && _ai_has_ollama ;;
+    ll|llama.cpp|llamacpp|llama) _ai_has_cmd claude ;;
     codex|c)                  _ai_has_cmd codex && _ai_has_env OPENAI_API_KEY ;;
     gemini|ge)                _ai_has_cmd gemini && _ai_has_env GEMINI_API_KEY ;;
     copilot|cp)               _ai_has_cmd copilot ;;

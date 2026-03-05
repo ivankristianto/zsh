@@ -38,6 +38,7 @@ _ai_help() {
   _ai_cmd_available mini && { _ai_help_cmd_row "mini" "m" "MiniMax M2.1"; printed=1; }
   _ai_cmd_available openrouter && { _ai_help_cmd_row "openrouter" "or" "OpenRouter (--model)"; printed=1; }
   _ai_cmd_available ollama && { _ai_help_cmd_row "ollama" "ol" "Ollama local (--model)"; printed=1; }
+  _ai_cmd_available llamacpp && { _ai_help_cmd_row "llama.cpp" "ll" "llama.cpp local (--model)"; printed=1; }
   _ai_cmd_available custom && { _ai_help_cmd_row "custom" "cu" "Custom endpoint"; printed=1; }
 
   printf "\n"
@@ -60,6 +61,7 @@ _ai_help() {
   _ai_cmd_available haiku && { printf "    ${_AI[d]}ai h \"summarize this error\"${_AI[r]}\n"; ((example_count+=1)); }
   _ai_cmd_available glm && { printf "    ${_AI[d]}ai g \"design a rollback\"${_AI[r]}\n"; ((example_count+=1)); }
   _ai_cmd_available openrouter && { printf "    ${_AI[d]}ai or --model anthropic/claude-opus-4 \"analyze this\"${_AI[r]}\n"; ((example_count+=1)); }
+  _ai_cmd_available llamacpp && { printf "    ${_AI[d]}ai ll --model qwen2.5-coder:14b \"draft tests\"${_AI[r]}\n"; ((example_count+=1)); }
   _ai_cmd_available codex && { printf "    ${_AI[d]}ai c \"refactor this\"${_AI[r]}\n"; ((example_count+=1)); }
   _ai_cmd_available gemini && { printf "    ${_AI[d]}ai ge \"summarize PR\"${_AI[r]}\n"; ((example_count+=1)); }
   _ai_cmd_available copilot && { printf "    ${_AI[d]}ai cp \"create release notes\"${_AI[r]}\n"; ((example_count+=1)); }
