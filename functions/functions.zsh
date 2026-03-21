@@ -114,4 +114,7 @@ up() {
     else
         echo "nvm not found; skipping Node LTS check"
     fi
+
+    echo "==> Skills update"
+    npx skills update || echo "    ⚠ skills update failed (continuing)" >&2
 }
