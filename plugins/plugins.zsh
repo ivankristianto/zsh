@@ -13,10 +13,6 @@ if [[ -r "$HOME/.fzf.zsh" ]]; then
   source "$HOME/.fzf.zsh"
 fi
 
-if command -v zoxide >/dev/null 2>&1; then
-  eval "$(zoxide init zsh --cmd cd)"
-fi
-
 # Keep syntax highlighting late in init order.
 if [[ -r "$ZSH/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
   source "$ZSH/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"

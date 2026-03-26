@@ -19,4 +19,9 @@ _zsh_load "functions/ai_functions.zsh"
 _zsh_load "functions/functions.zsh"
 _zsh_load "plugins/plugins.zsh"
 
+# Initialize zoxide at the very end (recommended by zoxide)
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh --cmd cd)"
+fi
+
 unset -f _zsh_load
