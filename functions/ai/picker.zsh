@@ -11,7 +11,7 @@ _ai_pick() {
   _ai_cmd_available sonnet && entries+=("sonnet"$'\t'"$(_ai_check_cmd claude)  sonnet     │  Claude Sonnet        │  claude-sonnet-4      │  claude")
   _ai_cmd_available haiku && entries+=("haiku"$'\t'"$(_ai_check_cmd claude)  haiku      │  Claude Haiku         │  claude-haiku-4       │  claude")
   _ai_cmd_available opus && entries+=("opus"$'\t'"$(_ai_check_cmd claude)  opus       │  Claude Opus          │  claude-opus-4        │  claude")
-  _ai_cmd_available glm && entries+=("glm"$'\t'"$(_ai_check GLM_API_KEY)  glm        │  GLM-4.7 (Z.ai)       │  glm-4.7              │  claude")
+  _ai_cmd_available glm && entries+=("glm"$'\t'"$(_ai_check GLM_API_KEY)  glm        │  GLM-5.1 (Z.ai)       │  glm-5.1              │  claude")
   _ai_cmd_available kimi && entries+=("kimi"$'\t'"$(_ai_check KIMI_API_KEY)  kimi       │  Kimi K2.5            │  kimi-k2.5            │  claude")
   _ai_cmd_available mini && entries+=("mini"$'\t'"$(_ai_check MINIMAX_API_KEY)  mini       │  MiniMax M2.1         │  MiniMax-M2.1         │  claude")
   _ai_cmd_available openrouter && entries+=("openrouter"$'\t'"$(_ai_check OPENROUTER_API_KEY)  openrouter │  OpenRouter           │  claude-sonnet-4      │  claude")

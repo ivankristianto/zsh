@@ -137,7 +137,7 @@ Implementation layout:
 | `sonnet`     | `s`   | Claude Code with Claude Sonnet                        | `ai sonnet "review this diff"`                                               |
 | `haiku`      | `h`   | Claude Code with Claude Haiku                         | `ai haiku "summarize this log"`                                              |
 | `opus`       | `o`   | Claude Code with Claude Opus                          | `ai opus "deep architecture analysis"`                                       |
-| `glm`        | `g`   | Claude Code via GLM-4.7 (Z.ai)                        | `ai glm "plan rollout steps"`                                                |
+| `glm`        | `g`   | Claude Code via GLM-5.1 (Z.ai)                        | `ai glm "plan rollout steps"`                                                |
 | `kimi`       | `k`   | Claude Code via Kimi K2.5 (Moonshot)                  | `ai k "draft migration plan"`                                                |
 | `mini`       | `m`   | Claude Code via MiniMax M2.1                          | `ai mini "quick fix proposal"`                                               |
 | `openrouter` | `or`  | Claude Code via OpenRouter (`--model` supported)      | `ai openrouter --model anthropic/claude-opus-4 "check this service design"`  |

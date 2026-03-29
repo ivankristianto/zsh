@@ -1,7 +1,7 @@
 # Claude-based providers (including Anthropic-compatible endpoints)
 
 typeset -gA _AI_PROVIDERS=(
-  [glm]="GLM_API_KEY|https://api.z.ai/api/anthropic|glm-4.7|glm-4.5-Air|glm-4.7|glm-4.7|byel|GLM|0"
+  [glm]="GLM_API_KEY|https://api.z.ai/api/anthropic|glm-5.1|glm-5.1|glm-5.1|glm-5.1|byel|GLM|0"
   [kimi]="KIMI_API_KEY|https://api.kimi.com/coding/|kimi-k2.5|kimi-k2.5|kimi-k2.5|kimi-k2.5|mag|Kimi|0"
   [mini]="MINIMAX_API_KEY|https://api.minimax.io/anthropic|MiniMax-M2.1|MiniMax-M2.1|MiniMax-M2.1|MiniMax-M2.1|bmag|MiniMax|0"
   [or]="OPENROUTER_API_KEY|https://openrouter.ai/api|anthropic/claude-sonnet-4|anthropic/claude-sonnet-4|anthropic/claude-sonnet-4|anthropic/claude-sonnet-4|bgreen|OpenRouter|1"
