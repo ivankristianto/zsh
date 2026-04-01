@@ -129,7 +129,10 @@ _ai_run_claude() {
 _ai_run_custom() {
   _ai_require_cmd claude || return 1
 
-  local model="" endpoint="" apikey="" apikey_env=""
+  local model=""
+  local endpoint=""
+  local apikey=""
+  local apikey_env=""
   local args=()
 
   while [[ $# -gt 0 ]]; do
@@ -165,9 +168,18 @@ _ai_run_custom() {
     apikey="${(P)apikey_env}"
   fi
 
-  [[ -z "$model" ]] && { printf "${_AI[red]}✗ --model required${_AI[r]}\n"; return 1; }
-  [[ -z "$endpoint" ]] && { printf "${_AI[red]}✗ --endpoint required${_AI[r]}\n"; return 1; }
-  [[ -z "$apikey" ]] && { printf "${_AI[red]}✗ --apikey required${_AI[r]}\n"; return 1; }
+  [[ -z "$model" ]] && {
+    printf "${_AI[red]}✗ --model required${_AI[r]}\n"
+    return 1
+  }
+  [[ -z "$endpoint" ]] && {
+    printf "${_AI[red]}✗ --endpoint required${_AI[r]}\n"
+    return 1
+  }
+  [[ -z "$apikey" ]] && {
+    printf "${_AI[red]}✗ --apikey required${_AI[r]}\n"
+    return 1
+  }
 
   printf "${_AI[bmag]}▶${_AI[r]} Custom ${_AI[b]}%s${_AI[r]} ${_AI[d]}@ %s${_AI[r]}\n" "$model" "$endpoint"
   typeset -g AI_CUSTOM_API_KEY_LAST="$apikey"
