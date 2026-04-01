@@ -161,6 +161,8 @@ ai glm ship >/dev/null 2>&1
 ship_calls="$(cat "$AI_TEST_CALLS")"
 assert_contains "$ship_calls" "claude --dangerously-skip-permissions --system-prompt" \
   "ai glm ship should invoke claude with ship prompt"
+assert_contains "$ship_calls" "You are a git assistant. Help me commit changes, push to the current branch, and create a PR if the PR needs to be created." \
+  "ai glm ship should pass the ship prompt content"
 assert_contains "$ship_calls" "ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic" \
   "ai glm ship should set GLM base URL"
 assert_contains "$ship_calls" "ANTHROPIC_AUTH_TOKEN=test-glm-token" \
