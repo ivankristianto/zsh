@@ -118,4 +118,40 @@ calls_output="$(cat "$AI_TEST_CALLS")"
 assert_contains "$calls_output" "claude --dangerously-skip-permissions --model qwen2.5-coder:14b hello llama" "llama.cpp should execute claude with model forwarding"
 assert_contains "$calls_output" "env ANTHROPIC_BASE_URL=http://localhost:8001 ANTHROPIC_AUTH_TOKEN=sk-no-key-required ANTHROPIC_API_KEY=sk-no-key-required ANTHROPIC_MODEL=qwen2.5-coder:14b" "llama.cpp should hardcode anthropic-compatible endpoint config"
 
+# _ai_pget: data layer
+pget_env="$(_ai_pget glm env)"
+if [[ "$pget_env" != "GLM_API_KEY" ]]; then
+  print -r -- "FAIL: _ai_pget glm env expected GLM_API_KEY, got $pget_env"
+  exit 1
+fi
+
+pget_url="$(_ai_pget kimi url)"
+if [[ "$pget_url" != "https://api.kimi.com/coding/" ]]; then
+  print -r -- "FAIL: _ai_pget kimi url expected https://api.kimi.com/coding/, got $pget_url"
+  exit 1
+fi
+
+pget_ol="$(_ai_pget ol env)"
+if [[ "$pget_ol" != "_OLLAMA" ]]; then
+  print -r -- "FAIL: _ai_pget ol env expected _OLLAMA, got $pget_ol"
+  exit 1
+fi
+
+pget_lc="$(_ai_pget lc env)"
+if [[ "$pget_lc" != "_LLAMACPP" ]]; then
+  print -r -- "FAIL: _ai_pget lc env expected _LLAMACPP, got $pget_lc"
+  exit 1
+fi
+
+if _ai_pget nonexistent env >/dev/null 2>&1; then
+  print -r -- "FAIL: _ai_pget nonexistent should return non-zero"
+  exit 1
+fi
+
+pget_color="$(_ai_pget or color)"
+if [[ "$pget_color" != "bgreen" ]]; then
+  print -r -- "FAIL: _ai_pget or color expected bgreen, got $pget_color"
+  exit 1
+fi
+
 print -r -- "PASS: ai functions tests"
