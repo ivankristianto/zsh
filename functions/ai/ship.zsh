@@ -29,52 +29,25 @@ _ai_run_claude_ship() {
 _ai_run_provider_ship() {
   local key="$1"
   shift
-  local cfg="${_AI_PROVIDERS[$key]}"
-  [[ -z "$cfg" ]] && {
+
+  local varname="_AI_P_${key}"
+  (( ${(P)+varname} )) || {
     printf "${_AI[red]}✗ Unknown provider: %s${_AI[r]}\n" "$key"
     return 1
   }
 
   _ai_require_cmd claude || return 1
 
-  local parts=("${(@s:|:)cfg}")
-  local env_var="${parts[1]}"
-  local base_url="${parts[2]}"
-  local default_model="${parts[3]}"
-  local haiku="${parts[4]}"
-  local sonnet="${parts[5]}"
-  local opus="${parts[6]}"
-  local color="${parts[7]}"
-  local label="${parts[8]}"
+  local color label model
+  color="$(_ai_pget "$key" color)"
+  label="$(_ai_pget "$key" label)"
+  model="$(_ai_pget "$key" model)"
 
-  local token
-  if [[ "$env_var" == "_OLLAMA" ]]; then
-    _ai_has_ollama || {
-      printf "${_AI[red]}✗ Ollama unavailable (install ollama and run server at localhost:11434)${_AI[r]}\n"
-      return 1
-    }
-    token="ollama"
-  else
-    token="${(P)env_var}"
-    [[ -z "$token" ]] && {
-      printf "${_AI[red]}✗ %s not set${_AI[r]}\n" "$env_var"
-      return 1
-    }
-  fi
-
-  printf "${_AI[$color]}▶${_AI[r]} %s Ship ${_AI[b]}%s${_AI[r]}\n" "$label" "$default_model"
+  printf "${_AI[$color]}▶${_AI[r]} %s Ship ${_AI[b]}%s${_AI[r]}\n" "$label" "$model"
   _ai_save_last "$key ship"
 
-  ANTHROPIC_AUTH_TOKEN="$token" \
-  ANTHROPIC_BASE_URL="$base_url" \
-  ANTHROPIC_API_KEY="" \
-  API_TIMEOUT_MS=3000000 \
-  ANTHROPIC_MODEL="$default_model" \
-  ANTHROPIC_DEFAULT_HAIKU_MODEL="$haiku" \
-  ANTHROPIC_DEFAULT_SONNET_MODEL="$sonnet" \
-  ANTHROPIC_DEFAULT_OPUS_MODEL="$opus" \
-  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
-  claude --dangerously-skip-permissions \
+  _ai_provider_exec "$key" "" \
+    --dangerously-skip-permissions \
     --system-prompt "$_AI_SHIP_PROMPT" \
     "Let's review and commit the changes. What's the current git status?" \
     "$@"

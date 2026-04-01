@@ -154,4 +154,18 @@ if [[ "$pget_color" != "bgreen" ]]; then
   exit 1
 fi
 
+# provider-backed ship: uses shared provider config/executor after provider refactor
+: > "$AI_TEST_CALLS"
+export GLM_API_KEY="test-glm-token"
+ai glm ship >/dev/null 2>&1
+ship_calls="$(cat "$AI_TEST_CALLS")"
+assert_contains "$ship_calls" "claude --dangerously-skip-permissions --system-prompt" \
+  "ai glm ship should invoke claude with ship prompt"
+assert_contains "$ship_calls" "ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic" \
+  "ai glm ship should set GLM base URL"
+assert_contains "$ship_calls" "ANTHROPIC_AUTH_TOKEN=test-glm-token" \
+  "ai glm ship should set GLM token"
+assert_contains "$ship_calls" "ANTHROPIC_MODEL=glm-5.1" \
+  "ai glm ship should set GLM model"
+
 print -r -- "PASS: ai functions tests"
