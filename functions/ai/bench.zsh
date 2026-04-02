@@ -49,6 +49,7 @@ _ai_bench() {
 
   local total=${#available[@]}
   local i=1
+  local had_failure=0
 
   for p in "${available[@]}"; do
     printf "\n${_AI[bcyan]}▶ [%d/%d] %s${_AI[r]}\n" "$i" "$total" "$p"
@@ -67,11 +68,16 @@ _ai_bench() {
     esac
     local rc=$?
     if (( rc != 0 )); then
-      return $rc
+      had_failure=1
+      printf "${_AI[yellow]}⚠ %s: provider failed, continuing${_AI[r]}\n" "$p" >&2
+      (( i++ ))
+      continue
     fi
 
     local elapsed=$(( SECONDS - start ))
     printf "\n${_AI[green]}✓ %s  %ds${_AI[r]}\n" "$p" "$elapsed"
     (( i++ ))
   done
+
+  (( had_failure == 0 )) || return 1
 }

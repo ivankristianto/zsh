@@ -28,6 +28,12 @@ print -r -- "env ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-} ANTHROPIC_AUTH_TOKEN
 if [[ "${AI_TEST_CLAUDE_FAIL:-0}" == "1" ]]; then
   exit 1
 fi
+if [[ "${AI_TEST_CLAUDE_FAIL_ONCE:-0}" == "1" ]]; then
+  if [[ ! -f "$TEST_TMP/claude_fail_once_seen" ]]; then
+    : > "$TEST_TMP/claude_fail_once_seen"
+    exit 1
+  fi
+fi
 STUB
 
 cat > "$TEST_TMP/bin/opencode" <<'STUB'
@@ -246,6 +252,24 @@ if [[ "$bench_fail_rc" -eq 0 ]]; then
 fi
 assert_not_contains "$bench_fail_output" "✓ glm" \
   "ai bench should not print success for failed provider"
+
+# ai bench: provider failures continue to next provider
+: > "$AI_TEST_CALLS"
+rm -f "$TEST_TMP/claude_fail_once_seen"
+export GLM_API_KEY="test-glm-token"
+export KIMI_API_KEY="test-kimi-token"
+export AI_TEST_CLAUDE_FAIL_ONCE="1"
+bench_continue_output="$(ai bench "bench prompt" glm kimi 2>&1)"
+bench_continue_rc=$?
+unset AI_TEST_CLAUDE_FAIL_ONCE
+if [[ "$bench_continue_rc" -eq 0 ]]; then
+  print -r -- "FAIL: ai bench should return non-zero when any provider fails"
+  exit 1
+fi
+assert_contains "$bench_continue_output" "provider failed, continuing" \
+  "ai bench should warn and continue when a provider fails"
+assert_contains "$bench_continue_output" "✓ kimi" \
+  "ai bench should continue and run later providers after a failure"
 
 set -e
 
