@@ -12,43 +12,48 @@ _ai_context() {
     esac
   done
 
-  local out=""
+  local -a lines
+  local file_tree status_output recent_commits branch
 
-  out+="# Context\n\n"
-
-  out+="## Directory\n"
-  out+="$(pwd)\n\n"
-
-  out+="## File Tree\n\`\`\`\n"
+  lines+=("# Context" "")
+  lines+=("## Directory" "$(pwd)" "")
+  lines+=("## File Tree" '```')
   if command -v fd >/dev/null 2>&1; then
-    out+="$(fd --max-depth 2 --hidden --exclude .git 2>/dev/null)\n"
+    file_tree="$(fd --max-depth 2 --hidden --exclude .git 2>/dev/null)"
   else
-    out+="$(find . -maxdepth 2 -not -path './.git/*' -not -name '.git' 2>/dev/null | sort)\n"
+    file_tree="$(find . -maxdepth 2 -not -path './.git/*' -not -name '.git' 2>/dev/null | sort)"
   fi
-  out+="\`\`\`\n\n"
+  if [[ -n "$file_tree" ]]; then
+    lines+=("${(@f)file_tree}")
+  fi
+  lines+=('```' "")
 
   if _ai_in_git_repo; then
-    local branch
     branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
-    out+="## Git Branch\n${branch}\n\n"
+    status_output="$(git status -s 2>/dev/null)"
+    recent_commits="$(git log --oneline -10 2>/dev/null)"
 
-    out+="## Git Status\n\`\`\`\n"
-    out+="$(git status -s 2>/dev/null)\n"
-    out+="\`\`\`\n\n"
-
-    out+="## Recent Commits\n\`\`\`\n"
-    out+="$(git log --oneline -10 2>/dev/null)\n"
-    out+="\`\`\`\n"
+    lines+=("## Git Branch" "$branch" "")
+    lines+=("## Git Status" '```')
+    if [[ -n "$status_output" ]]; then
+      lines+=("${(@f)status_output}")
+    fi
+    lines+=('```' "")
+    lines+=("## Recent Commits" '```')
+    if [[ -n "$recent_commits" ]]; then
+      lines+=("${(@f)recent_commits}")
+    fi
+    lines+=('```')
   fi
 
-  printf '%b' "$out"
+  print -rl -- "$lines[@]"
 
   if [[ "$copy" -eq 1 ]]; then
     if command -v pbcopy >/dev/null 2>&1; then
-      printf '%b' "$out" | pbcopy
+      print -rl -- "$lines[@]" | pbcopy
       printf "${_AI[green]}✓ Copied to clipboard${_AI[r]}\n" >&2
     elif command -v xclip >/dev/null 2>&1; then
-      printf '%b' "$out" | xclip -selection clipboard
+      print -rl -- "$lines[@]" | xclip -selection clipboard
       printf "${_AI[green]}✓ Copied to clipboard${_AI[r]}\n" >&2
     else
       printf "${_AI[yellow]}⚠ No clipboard tool found (pbcopy/xclip)${_AI[r]}\n" >&2

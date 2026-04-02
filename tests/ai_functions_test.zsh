@@ -250,7 +250,7 @@ assert_not_contains "$bench_fail_output" "✓ glm" \
 set -e
 
 # ai context: required sections present
-context_out="$(ai context 2>/dev/null)"
+context_out="$(cd "$ROOT_DIR" && ai context 2>/dev/null)"
 assert_contains "$context_out" "# Context" \
   "ai context should output # Context header"
 assert_contains "$context_out" "## Directory" \
@@ -270,7 +270,7 @@ cat > "$TEST_TMP/bin/pbcopy" <<'STUB'
 cat > "$TEST_TMP/pbcopy_received"
 STUB
 chmod +x "$TEST_TMP/bin/pbcopy"
-ai context --copy >/dev/null 2>/dev/null
+(cd "$ROOT_DIR" && ai context --copy >/dev/null 2>/dev/null)
 if [[ ! -f "$TEST_TMP/pbcopy_received" ]]; then
   print -r -- "FAIL: ai context --copy should pipe to pbcopy"
   exit 1
@@ -280,9 +280,16 @@ assert_contains "$copy_received" "# Context" \
   "ai context --copy should send # Context content to pbcopy"
 
 # ai context: unknown flag exits non-zero
-if ai context --badopt >/dev/null 2>&1; then
+if (cd "$ROOT_DIR" && ai context --badopt >/dev/null 2>&1); then
   print -r -- "FAIL: ai context --badopt should exit non-zero"
   exit 1
 fi
+
+# ai context: dynamic file names are printed literally
+mkdir -p "$TEST_TMP/context-literal"
+touch "$TEST_TMP/context-literal/file\\nname.txt"
+literal_context_out="$(cd "$TEST_TMP/context-literal" && ai context 2>/dev/null)"
+assert_contains "$literal_context_out" "file\\nname.txt" \
+  "ai context should print dynamic file names literally"
 
 print -r -- "PASS: ai functions tests"
