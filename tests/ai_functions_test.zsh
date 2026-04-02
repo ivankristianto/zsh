@@ -24,6 +24,9 @@ cat > "$TEST_TMP/bin/claude" <<'STUB'
 #!/usr/bin/env zsh
 print -r -- "claude $*" >> "$AI_TEST_CALLS"
 print -r -- "env ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-} ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN:-} ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-} ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}" >> "$AI_TEST_CALLS"
+if [[ "${AI_TEST_CLAUDE_FAIL:-0}" == "1" ]]; then
+  exit 1
+fi
 STUB
 
 cat > "$TEST_TMP/bin/opencode" <<'STUB'
@@ -42,6 +45,18 @@ assert_contains() {
   if [[ "$haystack" != *"$needle"* ]]; then
     print -r -- "FAIL: $message"
     print -r -- "Expected to find: $needle"
+    exit 1
+  fi
+}
+
+assert_not_contains() {
+  local haystack="$1"
+  local needle="$2"
+  local message="$3"
+
+  if [[ "$haystack" == *"$needle"* ]]; then
+    print -r -- "FAIL: $message"
+    print -r -- "Did not expect to find: $needle"
     exit 1
   fi
 }
@@ -201,6 +216,30 @@ ai bench "bench prompt" glm >/dev/null 2>&1
 bench_calls="$(cat "$AI_TEST_CALLS")"
 assert_contains "$bench_calls" "claude" \
   "ai bench glm should invoke the claude stub"
+
+# ai bench: supports Claude aliases
+: > "$AI_TEST_CALLS"
+ai bench "bench prompt" s >/dev/null 2>&1
+bench_alias_calls="$(cat "$AI_TEST_CALLS")"
+assert_contains "$bench_alias_calls" "claude --dangerously-skip-permissions --model sonnet bench prompt" \
+  "ai bench should support sonnet alias"
+
+# ai bench: custom endpoint is rejected
+bench_custom_output="$(ai bench "hello" custom 2>&1)"
+assert_contains "$bench_custom_output" "not supported in bench" \
+  "ai bench should reject custom provider"
+
+# ai bench: provider runner failures propagate
+export AI_TEST_CLAUDE_FAIL="1"
+bench_fail_output="$(ai bench "bench prompt" glm 2>&1)"
+bench_fail_rc=$?
+unset AI_TEST_CLAUDE_FAIL
+if [[ "$bench_fail_rc" -eq 0 ]]; then
+  print -r -- "FAIL: ai bench should fail when provider runner fails"
+  exit 1
+fi
+assert_not_contains "$bench_fail_output" "✓ glm" \
+  "ai bench should not print success for failed provider"
 
 set -e
 

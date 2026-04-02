@@ -1,7 +1,7 @@
 # ai bench — run a prompt across multiple Claude-backed providers sequentially
 
 # Providers that cannot accept a bare prompt non-interactively
-typeset -ga _AI_BENCH_EXCLUDED=(codex c gemini ge copilot cp opencode oc)
+typeset -ga _AI_BENCH_EXCLUDED=(codex c gemini ge copilot cp opencode oc custom cu)
 
 _ai_bench() {
   if [[ $# -lt 2 ]]; then
@@ -13,12 +13,22 @@ _ai_bench() {
   shift
 
   local -a available=()
+  local candidate=""
   for p in "$@"; do
     if (( ${_AI_BENCH_EXCLUDED[(Ie)$p]} )); then
       printf "${_AI[yellow]}⚠ %s: not supported in bench (non-Claude provider)${_AI[r]}\n" "$p" >&2
       continue
     fi
-    if ! _ai_cmd_available "$p"; then
+    case "$p" in
+      s) candidate="sonnet" ;;
+      h) candidate="haiku" ;;
+      o) candidate="opus" ;;
+      g) candidate="glm" ;;
+      k) candidate="kimi" ;;
+      m) candidate="mini" ;;
+      *) candidate="$p" ;;
+    esac
+    if ! _ai_cmd_available "$candidate"; then
       printf "${_AI[yellow]}⚠ %s: unavailable, skipping${_AI[r]}\n" "$p" >&2
       continue
     fi
@@ -48,6 +58,10 @@ _ai_bench() {
       ol|ollama)                   _ai_run_provider ol   "$prompt" ;;
       ll|llama.cpp|llamacpp|llama) _ai_run_llamacpp      "$prompt" ;;
     esac
+    local rc=$?
+    if (( rc != 0 )); then
+      return $rc
+    fi
 
     local elapsed=$(( SECONDS - start ))
     printf "\n${_AI[green]}✓ %s  %ds${_AI[r]}\n" "$p" "$elapsed"
