@@ -149,6 +149,7 @@ Implementation layout:
 | `copilot`    | `cp`  | GitHub Copilot CLI                                    | `ai copilot "generate release notes"`                                        |
 | `opencode`   | `oc`  | OpenCode build agent (`--model`, `--review`)          | `ai opencode --review`                                                       |
 | `install`    | `i`   | Install a supported coding agent CLI via npm global   | `ai install codex`                                                           |
+| `bench`      | `b`   | Run one prompt across Claude-backed providers         | `ai bench "review this diff" glm kimi or`                                   |
 | `last`       | `l`   | Re-run last selected provider                         | `ai last`                                                                    |
 | `help`       | `-h`  | Show built-in help and status (shows only ready cmds) | `ai help`                                                                    |
 | `<cmd> ship` | -     | Interactive git assistant (commit/push/PR)            | `ai g ship`                                                                  |
@@ -193,6 +194,7 @@ ai last
 ai l
 ai install claude
 ai install codex --dry-run
+ai bench "compare rollback plans" glm kimi openrouter
 ```
 
 ### AI Helper Notes
