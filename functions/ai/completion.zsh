@@ -35,6 +35,8 @@ _ai_completions() {
     'install:Install AI CLI'
     'bench:Run prompt across Claude-backed providers'
     'b:Run prompt across Claude-backed providers'
+    'context:Dump project context as markdown'
+    'ctx:Dump project context as markdown'
     'i:Install AI CLI'
     'last:Re-run last provider'
     'l:Re-run last provider'

@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="${0:A:h:h}"
 TEST_TMP="$(mktemp -d)"
+export TEST_TMP
 trap 'rm -rf "$TEST_TMP"' EXIT
 
 export TMPDIR="$TEST_TMP/tmp"
@@ -247,5 +248,41 @@ assert_not_contains "$bench_fail_output" "✓ glm" \
   "ai bench should not print success for failed provider"
 
 set -e
+
+# ai context: required sections present
+context_out="$(ai context 2>/dev/null)"
+assert_contains "$context_out" "# Context" \
+  "ai context should output # Context header"
+assert_contains "$context_out" "## Directory" \
+  "ai context should output ## Directory section"
+assert_contains "$context_out" "## File Tree" \
+  "ai context should output ## File Tree section"
+
+# ai context: git sections present (tests run inside the ~/.zsh git repo)
+assert_contains "$context_out" "## Git Branch" \
+  "ai context should include ## Git Branch when in git repo"
+assert_contains "$context_out" "## Recent Commits" \
+  "ai context should include ## Recent Commits when in git repo"
+
+# ai context: --copy pipes to pbcopy
+cat > "$TEST_TMP/bin/pbcopy" <<'STUB'
+#!/usr/bin/env zsh
+cat > "$TEST_TMP/pbcopy_received"
+STUB
+chmod +x "$TEST_TMP/bin/pbcopy"
+ai context --copy >/dev/null 2>/dev/null
+if [[ ! -f "$TEST_TMP/pbcopy_received" ]]; then
+  print -r -- "FAIL: ai context --copy should pipe to pbcopy"
+  exit 1
+fi
+copy_received="$(cat "$TEST_TMP/pbcopy_received")"
+assert_contains "$copy_received" "# Context" \
+  "ai context --copy should send # Context content to pbcopy"
+
+# ai context: unknown flag exits non-zero
+if ai context --badopt >/dev/null 2>&1; then
+  print -r -- "FAIL: ai context --badopt should exit non-zero"
+  exit 1
+fi
 
 print -r -- "PASS: ai functions tests"
