@@ -71,6 +71,9 @@ switchphp() {
 # Daily software update helper
 # Short command: up
 up() {
+    echo "==> ~/.zsh update"
+    git -C "$HOME/.zsh" pull --ff-only || echo "    ⚠ ~/.zsh pull failed (continuing)" >&2
+
     if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         local git_upstream
         git_upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)"
@@ -117,4 +120,15 @@ up() {
 
     echo "==> Skills update"
     npx skills update || echo "    ⚠ skills update failed (continuing)" >&2
+}
+
+# Startup profiler. Injects zsh/zprof before .zshrc runs via ZDOTDIR wrapper.
+# Usage: zload [n]   — show top n contributors by time (default: 20)
+zload() {
+  local n="${1:-20}"
+  local tmpdir
+  tmpdir="$(mktemp -d)"
+  printf 'zmodload zsh/zprof\nsource "$HOME/.zshrc"\nzprof\n' > "$tmpdir/.zshrc"
+  ZDOTDIR="$tmpdir" zsh -i 2>/dev/null | head -"$n"
+  rm -rf "$tmpdir"
 }
