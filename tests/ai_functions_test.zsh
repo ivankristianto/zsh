@@ -203,6 +203,11 @@ bench_unknown_output="$(ai bench "hello" unknownxyz 2>&1)"
 assert_contains "$bench_unknown_output" "unavailable" \
   "ai bench should warn and skip unknown provider"
 
+# ai bench: utility commands are not valid bench targets
+bench_help_output="$(ai bench "hello" help 2>&1)"
+assert_contains "$bench_help_output" "unavailable" \
+  "ai bench should reject help as a non-provider target"
+
 # ai bench: all providers excluded → exits non-zero
 if ai bench "hello" codex gemini >/dev/null 2>&1; then
   print -r -- "FAIL: ai bench with only excluded providers should exit non-zero"

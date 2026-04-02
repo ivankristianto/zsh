@@ -2,6 +2,9 @@
 
 # Providers that cannot accept a bare prompt non-interactively
 typeset -ga _AI_BENCH_EXCLUDED=(codex c gemini ge copilot cp opencode oc custom cu)
+typeset -ga _AI_BENCH_SUPPORTED=(
+  sonnet s haiku h opus o glm g kimi k mini m or openrouter ol ollama ll llama.cpp llamacpp llama
+)
 
 _ai_bench() {
   if [[ $# -lt 2 ]]; then
@@ -17,6 +20,10 @@ _ai_bench() {
   for p in "$@"; do
     if (( ${_AI_BENCH_EXCLUDED[(Ie)$p]} )); then
       printf "${_AI[yellow]}⚠ %s: not supported in bench (non-Claude provider)${_AI[r]}\n" "$p" >&2
+      continue
+    fi
+    if (( ! ${_AI_BENCH_SUPPORTED[(Ie)$p]} )); then
+      printf "${_AI[yellow]}⚠ %s: unavailable, skipping${_AI[r]}\n" "$p" >&2
       continue
     fi
     case "$p" in
