@@ -157,7 +157,7 @@ fi
 # provider-backed ship: uses shared provider config/executor after provider refactor
 : > "$AI_TEST_CALLS"
 export GLM_API_KEY="test-glm-token"
-ai glm ship >/dev/null 2>&1
+(cd "$ROOT_DIR" && ai glm ship >/dev/null 2>&1)
 ship_calls="$(cat "$AI_TEST_CALLS")"
 assert_contains "$ship_calls" "claude --dangerously-skip-permissions --system-prompt" \
   "ai glm ship should invoke claude with ship prompt"
