@@ -36,6 +36,7 @@ ai() {
     copilot|cp) _ai_run_copilot "$@" ;;
     oc|opencode) _ai_run_opencode "$@" ;;
     custom|cu) _ai_run_custom "$@" ;;
+    bench|b) _ai_bench "$@" ;;
     install|i) _ai_install "$@" ;;
     last|l)
       local last_cmd

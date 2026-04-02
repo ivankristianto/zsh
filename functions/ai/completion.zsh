@@ -33,6 +33,8 @@ _ai_completions() {
     'custom:Custom endpoint'
     'cu:Custom endpoint'
     'install:Install AI CLI'
+    'bench:Run prompt across Claude-backed providers'
+    'b:Run prompt across Claude-backed providers'
     'i:Install AI CLI'
     'last:Re-run last provider'
     'l:Re-run last provider'

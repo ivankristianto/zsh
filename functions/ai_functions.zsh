@@ -17,6 +17,7 @@ for _ai_file in \
   help.zsh \
   picker.zsh \
   ai.zsh \
+  bench.zsh \
   completion.zsh
   do
   if [[ -r "$_AI_MODULE_DIR/$_ai_file" ]]; then

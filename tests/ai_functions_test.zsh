@@ -170,4 +170,38 @@ assert_contains "$ship_calls" "ANTHROPIC_AUTH_TOKEN=test-glm-token" \
 assert_contains "$ship_calls" "ANTHROPIC_MODEL=glm-5.1" \
   "ai glm ship should set GLM model"
 
+set +e
+
+# ai bench: usage error — no providers given
+if ai bench "hello" >/dev/null 2>&1; then
+  print -r -- "FAIL: ai bench with no providers should fail"
+  exit 1
+fi
+
+# ai bench: excluded provider emits "not supported in bench"
+bench_skip_output="$(ai bench "hello" codex 2>&1)"
+assert_contains "$bench_skip_output" "not supported in bench" \
+  "ai bench should reject codex as non-Claude provider"
+
+# ai bench: unknown provider emits "unavailable"
+bench_unknown_output="$(ai bench "hello" unknownxyz 2>&1)"
+assert_contains "$bench_unknown_output" "unavailable" \
+  "ai bench should warn and skip unknown provider"
+
+# ai bench: all providers excluded → exits non-zero
+if ai bench "hello" codex gemini >/dev/null 2>&1; then
+  print -r -- "FAIL: ai bench with only excluded providers should exit non-zero"
+  exit 1
+fi
+
+# ai bench: runs claude-backed provider (glm)
+: > "$AI_TEST_CALLS"
+export GLM_API_KEY="test-glm-token"
+ai bench "bench prompt" glm >/dev/null 2>&1
+bench_calls="$(cat "$AI_TEST_CALLS")"
+assert_contains "$bench_calls" "claude" \
+  "ai bench glm should invoke the claude stub"
+
+set -e
+
 print -r -- "PASS: ai functions tests"
