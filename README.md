@@ -149,6 +149,8 @@ Implementation layout:
 | `copilot`    | `cp`  | GitHub Copilot CLI                                    | `ai copilot "generate release notes"`                                        |
 | `opencode`   | `oc`  | OpenCode build agent (`--model`, `--review`)          | `ai opencode --review`                                                       |
 | `install`    | `i`   | Install a supported coding agent CLI via npm global   | `ai install codex`                                                           |
+| `bench`      | `b`   | Run one prompt across Claude-backed providers         | `ai bench "review this diff" glm kimi or`                                   |
+| `context`    | `ctx` | Dump project context as markdown                      | `ai context --copy`                                                          |
 | `last`       | `l`   | Re-run last selected provider                         | `ai last`                                                                    |
 | `help`       | `-h`  | Show built-in help and status (shows only ready cmds) | `ai help`                                                                    |
 | `<cmd> ship` | -     | Interactive git assistant (commit/push/PR)            | `ai g ship`                                                                  |
@@ -193,6 +195,9 @@ ai last
 ai l
 ai install claude
 ai install codex --dry-run
+ai bench "compare rollback plans" glm kimi openrouter
+ai context
+ai context --copy
 ```
 
 ### AI Helper Notes
@@ -235,7 +240,8 @@ The AI will:
 | `tt`        | Send Telegram message using `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`         | `tt -m "deploy done"` |
 | `k2-dev`    | Shortcut SSH/orb connect helper for `k2-dev`                                    | `k2-dev`              |
 | `switchphp` | Switch linked Homebrew PHP version                                              | `switchphp 8.3`       |
-| `up`        | Run daily software refresh (current repo pull, Homebrew, npm globals, Node LTS) | `up`                  |
+| `up`        | Run daily software refresh (`~/.zsh`, current repo, Homebrew, npm globals, Node LTS, skills) | `up`                  |
+| `zload`     | Profile interactive zsh startup with `zprof`                                    | `zload 10`            |
 
 Daily update command details:
 
@@ -245,11 +251,21 @@ up
 
 `up` executes:
 
+- `git -C ~/.zsh pull --ff-only`
 - `git pull --ff-only` (when inside a git repo and tracking branch exists)
 - `brew upgrade`
 - `brew cleanup`
 - `npm install -g <all currently installed global npm packages except npm>`
 - `nvm install --lts` (when `nvm` is available)
+- `npx skills update`
+
+Startup profiling:
+
+```zsh
+zload 10
+```
+
+`zload` launches an interactive shell with `zprof` preloaded and prints the top startup contributors.
 
 ## Secrets Management
 

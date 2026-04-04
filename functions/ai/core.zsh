@@ -120,3 +120,62 @@ _ai_cmd_available() {
     *)                        return 1 ;;
   esac
 }
+
+# Provider config lookup. Returns the value of field for provider key.
+# Returns non-zero if the provider key is not registered.
+_ai_pget() {
+  local key="$1" field="$2"
+  local varname="_AI_P_${key}"
+  (( ${(P)+varname} )) || return 1
+  print -- "${${(P)varname}[$field]:-}"
+}
+
+# Shared provider executor: validates token, sets ANTHROPIC_* env, runs claude.
+# Usage: _ai_provider_exec <key> <model_override|""> [claude_args...]
+# model_override controls ANTHROPIC_MODEL; pass "" to use the provider default.
+# Does NOT print a header or call _ai_save_last — callers are responsible for those.
+_ai_provider_exec() {
+  local key="$1"
+  local override_model="${2:-}"
+  shift 2
+
+  local env_var url default_model haiku sonnet_m opus
+  env_var="$(_ai_pget "$key" env)"
+  url="$(_ai_pget "$key" url)"
+  default_model="$(_ai_pget "$key" model)"
+  haiku="$(_ai_pget "$key" haiku)"
+  sonnet_m="$(_ai_pget "$key" sonnet)"
+  opus="$(_ai_pget "$key" opus)"
+
+  local model="${override_model:-$default_model}"
+  local token="" api_key=""
+
+  if [[ "$env_var" == "_OLLAMA" ]]; then
+    _ai_has_ollama || {
+      printf "${_AI[red]}✗ Ollama unavailable (install ollama and run server at localhost:11434)${_AI[r]}\n"
+      return 1
+    }
+    token="ollama"
+  elif [[ "$env_var" == "_LLAMACPP" ]]; then
+    token="sk-no-key-required"
+    api_key="sk-no-key-required"
+    url="http://localhost:8001"
+  else
+    token="${(P)env_var}"
+    [[ -z "$token" ]] && {
+      printf "${_AI[red]}✗ %s not set${_AI[r]}\n" "$env_var"
+      return 1
+    }
+  fi
+
+  ANTHROPIC_AUTH_TOKEN="$token" \
+  ANTHROPIC_BASE_URL="$url" \
+  ANTHROPIC_API_KEY="$api_key" \
+  API_TIMEOUT_MS=3000000 \
+  ANTHROPIC_MODEL="$model" \
+  ANTHROPIC_DEFAULT_HAIKU_MODEL="$haiku" \
+  ANTHROPIC_DEFAULT_SONNET_MODEL="$sonnet_m" \
+  ANTHROPIC_DEFAULT_OPUS_MODEL="$opus" \
+  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
+  claude "$@"
+}

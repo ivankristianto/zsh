@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="${0:A:h:h}"
 TEST_TMP="$(mktemp -d)"
+export TEST_TMP
 trap 'rm -rf "$TEST_TMP"' EXIT
 
 export TMPDIR="$TEST_TMP/tmp"
@@ -24,6 +25,15 @@ cat > "$TEST_TMP/bin/claude" <<'STUB'
 #!/usr/bin/env zsh
 print -r -- "claude $*" >> "$AI_TEST_CALLS"
 print -r -- "env ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-} ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN:-} ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-} ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}" >> "$AI_TEST_CALLS"
+if [[ "${AI_TEST_CLAUDE_FAIL:-0}" == "1" ]]; then
+  exit 1
+fi
+if [[ "${AI_TEST_CLAUDE_FAIL_ONCE:-0}" == "1" ]]; then
+  if [[ ! -f "$TEST_TMP/claude_fail_once_seen" ]]; then
+    : > "$TEST_TMP/claude_fail_once_seen"
+    exit 1
+  fi
+fi
 STUB
 
 cat > "$TEST_TMP/bin/opencode" <<'STUB'
@@ -42,6 +52,18 @@ assert_contains() {
   if [[ "$haystack" != *"$needle"* ]]; then
     print -r -- "FAIL: $message"
     print -r -- "Expected to find: $needle"
+    exit 1
+  fi
+}
+
+assert_not_contains() {
+  local haystack="$1"
+  local needle="$2"
+  local message="$3"
+
+  if [[ "$haystack" == *"$needle"* ]]; then
+    print -r -- "FAIL: $message"
+    print -r -- "Did not expect to find: $needle"
     exit 1
   fi
 }
@@ -117,5 +139,181 @@ ai llama.cpp --model qwen2.5-coder:14b "hello llama" >/dev/null
 calls_output="$(cat "$AI_TEST_CALLS")"
 assert_contains "$calls_output" "claude --dangerously-skip-permissions --model qwen2.5-coder:14b hello llama" "llama.cpp should execute claude with model forwarding"
 assert_contains "$calls_output" "env ANTHROPIC_BASE_URL=http://localhost:8001 ANTHROPIC_AUTH_TOKEN=sk-no-key-required ANTHROPIC_API_KEY=sk-no-key-required ANTHROPIC_MODEL=qwen2.5-coder:14b" "llama.cpp should hardcode anthropic-compatible endpoint config"
+
+# _ai_pget: data layer
+pget_env="$(_ai_pget glm env)"
+if [[ "$pget_env" != "GLM_API_KEY" ]]; then
+  print -r -- "FAIL: _ai_pget glm env expected GLM_API_KEY, got $pget_env"
+  exit 1
+fi
+
+pget_url="$(_ai_pget kimi url)"
+if [[ "$pget_url" != "https://api.kimi.com/coding/" ]]; then
+  print -r -- "FAIL: _ai_pget kimi url expected https://api.kimi.com/coding/, got $pget_url"
+  exit 1
+fi
+
+pget_ol="$(_ai_pget ol env)"
+if [[ "$pget_ol" != "_OLLAMA" ]]; then
+  print -r -- "FAIL: _ai_pget ol env expected _OLLAMA, got $pget_ol"
+  exit 1
+fi
+
+pget_lc="$(_ai_pget lc env)"
+if [[ "$pget_lc" != "_LLAMACPP" ]]; then
+  print -r -- "FAIL: _ai_pget lc env expected _LLAMACPP, got $pget_lc"
+  exit 1
+fi
+
+if _ai_pget nonexistent env >/dev/null 2>&1; then
+  print -r -- "FAIL: _ai_pget nonexistent should return non-zero"
+  exit 1
+fi
+
+pget_color="$(_ai_pget or color)"
+if [[ "$pget_color" != "bgreen" ]]; then
+  print -r -- "FAIL: _ai_pget or color expected bgreen, got $pget_color"
+  exit 1
+fi
+
+# provider-backed ship: uses shared provider config/executor after provider refactor
+: > "$AI_TEST_CALLS"
+export GLM_API_KEY="test-glm-token"
+(cd "$ROOT_DIR" && ai glm ship >/dev/null 2>&1)
+ship_calls="$(cat "$AI_TEST_CALLS")"
+assert_contains "$ship_calls" "claude --dangerously-skip-permissions --system-prompt" \
+  "ai glm ship should invoke claude with ship prompt"
+assert_contains "$ship_calls" "You are a git assistant. Help me commit changes, push to the current branch, and create a PR if the PR needs to be created." \
+  "ai glm ship should pass the ship prompt content"
+assert_contains "$ship_calls" "ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic" \
+  "ai glm ship should set GLM base URL"
+assert_contains "$ship_calls" "ANTHROPIC_AUTH_TOKEN=test-glm-token" \
+  "ai glm ship should set GLM token"
+assert_contains "$ship_calls" "ANTHROPIC_MODEL=glm-5.1" \
+  "ai glm ship should set GLM model"
+
+set +e
+
+# ai bench: usage error — no providers given
+if ai bench "hello" >/dev/null 2>&1; then
+  print -r -- "FAIL: ai bench with no providers should fail"
+  exit 1
+fi
+
+# ai bench: excluded provider emits "not supported in bench"
+bench_skip_output="$(ai bench "hello" codex 2>&1)"
+assert_contains "$bench_skip_output" "not supported in bench" \
+  "ai bench should reject codex as non-Claude provider"
+
+# ai bench: unknown provider emits "unavailable"
+bench_unknown_output="$(ai bench "hello" unknownxyz 2>&1)"
+assert_contains "$bench_unknown_output" "unavailable" \
+  "ai bench should warn and skip unknown provider"
+
+# ai bench: utility commands are not valid bench targets
+bench_help_output="$(ai bench "hello" help 2>&1)"
+assert_contains "$bench_help_output" "unavailable" \
+  "ai bench should reject help as a non-provider target"
+
+# ai bench: all providers excluded → exits non-zero
+if ai bench "hello" codex gemini >/dev/null 2>&1; then
+  print -r -- "FAIL: ai bench with only excluded providers should exit non-zero"
+  exit 1
+fi
+
+# ai bench: runs claude-backed provider (glm)
+: > "$AI_TEST_CALLS"
+export GLM_API_KEY="test-glm-token"
+ai bench "bench prompt" glm >/dev/null 2>&1
+bench_calls="$(cat "$AI_TEST_CALLS")"
+assert_contains "$bench_calls" "claude" \
+  "ai bench glm should invoke the claude stub"
+
+# ai bench: supports Claude aliases
+: > "$AI_TEST_CALLS"
+ai bench "bench prompt" s >/dev/null 2>&1
+bench_alias_calls="$(cat "$AI_TEST_CALLS")"
+assert_contains "$bench_alias_calls" "claude --dangerously-skip-permissions --model sonnet bench prompt" \
+  "ai bench should support sonnet alias"
+
+# ai bench: custom endpoint is rejected
+bench_custom_output="$(ai bench "hello" custom 2>&1)"
+assert_contains "$bench_custom_output" "not supported in bench" \
+  "ai bench should reject custom provider"
+
+# ai bench: provider runner failures propagate
+export AI_TEST_CLAUDE_FAIL="1"
+bench_fail_output="$(ai bench "bench prompt" glm 2>&1)"
+bench_fail_rc=$?
+unset AI_TEST_CLAUDE_FAIL
+if [[ "$bench_fail_rc" -eq 0 ]]; then
+  print -r -- "FAIL: ai bench should fail when provider runner fails"
+  exit 1
+fi
+assert_not_contains "$bench_fail_output" "✓ glm" \
+  "ai bench should not print success for failed provider"
+
+# ai bench: provider failures continue to next provider
+: > "$AI_TEST_CALLS"
+rm -f "$TEST_TMP/claude_fail_once_seen"
+export GLM_API_KEY="test-glm-token"
+export KIMI_API_KEY="test-kimi-token"
+export AI_TEST_CLAUDE_FAIL_ONCE="1"
+bench_continue_output="$(ai bench "bench prompt" glm kimi 2>&1)"
+bench_continue_rc=$?
+unset AI_TEST_CLAUDE_FAIL_ONCE
+if [[ "$bench_continue_rc" -eq 0 ]]; then
+  print -r -- "FAIL: ai bench should return non-zero when any provider fails"
+  exit 1
+fi
+assert_contains "$bench_continue_output" "provider failed, continuing" \
+  "ai bench should warn and continue when a provider fails"
+assert_contains "$bench_continue_output" "✓ kimi" \
+  "ai bench should continue and run later providers after a failure"
+
+set -e
+
+# ai context: required sections present
+context_out="$(cd "$ROOT_DIR" && ai context 2>/dev/null)"
+assert_contains "$context_out" "# Context" \
+  "ai context should output # Context header"
+assert_contains "$context_out" "## Directory" \
+  "ai context should output ## Directory section"
+assert_contains "$context_out" "## File Tree" \
+  "ai context should output ## File Tree section"
+
+# ai context: git sections present (tests run inside the ~/.zsh git repo)
+assert_contains "$context_out" "## Git Branch" \
+  "ai context should include ## Git Branch when in git repo"
+assert_contains "$context_out" "## Recent Commits" \
+  "ai context should include ## Recent Commits when in git repo"
+
+# ai context: --copy pipes to pbcopy
+cat > "$TEST_TMP/bin/pbcopy" <<'STUB'
+#!/usr/bin/env zsh
+cat > "$TEST_TMP/pbcopy_received"
+STUB
+chmod +x "$TEST_TMP/bin/pbcopy"
+(cd "$ROOT_DIR" && ai context --copy >/dev/null 2>/dev/null)
+if [[ ! -f "$TEST_TMP/pbcopy_received" ]]; then
+  print -r -- "FAIL: ai context --copy should pipe to pbcopy"
+  exit 1
+fi
+copy_received="$(cat "$TEST_TMP/pbcopy_received")"
+assert_contains "$copy_received" "# Context" \
+  "ai context --copy should send # Context content to pbcopy"
+
+# ai context: unknown flag exits non-zero
+if (cd "$ROOT_DIR" && ai context --badopt >/dev/null 2>&1); then
+  print -r -- "FAIL: ai context --badopt should exit non-zero"
+  exit 1
+fi
+
+# ai context: dynamic file names are printed literally
+mkdir -p "$TEST_TMP/context-literal"
+touch "$TEST_TMP/context-literal/file\\nname.txt"
+literal_context_out="$(cd "$TEST_TMP/context-literal" && ai context 2>/dev/null)"
+assert_contains "$literal_context_out" "file\\nname.txt" \
+  "ai context should print dynamic file names literally"
 
 print -r -- "PASS: ai functions tests"

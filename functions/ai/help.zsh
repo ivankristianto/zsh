@@ -51,6 +51,8 @@ _ai_help() {
   printf "\n"
   printf "  ${_AI[b]}  UTILITIES${_AI[r]}\n"
   _ai_help_cmd_row "install" "i" "Install supported AI CLIs"
+  _ai_help_cmd_row "bench" "b" "Run prompt across providers (Claude-backed only)"
+  _ai_help_cmd_row "context" "ctx" "Dump project context as markdown"
   _ai_cmd_available last && { _ai_help_cmd_row "last" "l" "Re-run last provider"; printed=1; }
   _ai_help_cmd_row "help" "-h" "Show help and status"
   (( printed == 0 )) && printf "    ${_AI[yellow]}⚠ No providers available yet. Configure keys/tools below.${_AI[r]}\n"

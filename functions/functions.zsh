@@ -71,14 +71,26 @@ switchphp() {
 # Daily software update helper
 # Short command: up
 up() {
+    echo "==> ~/.zsh update"
+    if command -v git >/dev/null 2>&1 && [[ -d "$HOME/.zsh/.git" ]]; then
+        git -C "$HOME/.zsh" pull --ff-only || echo "    ⚠ ~/.zsh pull failed (continuing)" >&2
+    else
+        echo "==> ~/.zsh: git not available or ~/.zsh is not a git repository; skipping pull"
+    fi
+
     if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        local git_upstream
-        git_upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)"
-        if [[ -n "$git_upstream" ]]; then
-            echo "==> Git pull (${git_upstream})"
-            git pull --ff-only || echo "    ⚠ git pull failed (continuing)" >&2
+        local git_upstream current_git_root
+        current_git_root="$(git rev-parse --show-toplevel 2>/dev/null)"
+        if [[ "$current_git_root" == "$HOME/.zsh" ]]; then
+            echo "==> Git: current repo is ~/.zsh; skipping duplicate pull"
         else
-            echo "==> Git: no upstream tracking branch; skipping pull"
+            git_upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)"
+            if [[ -n "$git_upstream" ]]; then
+                echo "==> Git pull (${git_upstream})"
+                git pull --ff-only || echo "    ⚠ git pull failed (continuing)" >&2
+            else
+                echo "==> Git: no upstream tracking branch; skipping pull"
+            fi
         fi
     else
         echo "==> Git: not in a git repository; skipping pull"
@@ -117,4 +129,25 @@ up() {
 
     echo "==> Skills update"
     npx skills update || echo "    ⚠ skills update failed (continuing)" >&2
+}
+
+# Startup profiler. Injects zsh/zprof before .zshrc runs via ZDOTDIR wrapper.
+# Usage: zload [n]   — show top n contributors by time (default: 20)
+zload() {
+  emulate -L zsh -o pipefail
+  local n="${1:-20}"
+  [[ "$n" == <-> && "$n" -gt 0 ]] || {
+    print -u2 -- "Usage: zload [n]"
+    return 1
+  }
+
+  local tmpdir
+  tmpdir="$(mktemp -d)" || return 1
+
+  {
+    printf 'zmodload zsh/zprof\nsource "$HOME/.zshrc"\nzprof\n' > "$tmpdir/.zshrc" || return 1
+    ZDOTDIR="$tmpdir" zsh -i 2>/dev/null | head -"$n"
+  } always {
+    rm -rf "$tmpdir"
+  }
 }
