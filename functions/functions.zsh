@@ -72,7 +72,11 @@ switchphp() {
 # Short command: up
 up() {
     echo "==> ~/.zsh update"
-    git -C "$HOME/.zsh" pull --ff-only || echo "    ⚠ ~/.zsh pull failed (continuing)" >&2
+    if command -v git >/dev/null 2>&1 && [[ -d "$HOME/.zsh/.git" ]]; then
+        git -C "$HOME/.zsh" pull --ff-only || echo "    ⚠ ~/.zsh pull failed (continuing)" >&2
+    else
+        echo "==> ~/.zsh: git not available or ~/.zsh is not a git repository; skipping pull"
+    fi
 
     if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         local git_upstream current_git_root
