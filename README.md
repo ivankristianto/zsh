@@ -242,6 +242,7 @@ The AI will:
 | `switchphp` | Switch linked Homebrew PHP version                                              | `switchphp 8.3`       |
 | `up`        | Run daily software refresh (`~/.zsh`, current repo, Homebrew, npm globals, Node LTS, skills) | `up`                  |
 | `zload`     | Profile interactive zsh startup with `zprof`                                    | `zload 10`            |
+| `tmexclude` | Recursively exclude folders from Time Machine backups                           | `tmexclude ~/projects node_modules` |
 
 Daily update command details:
 
@@ -266,6 +267,13 @@ zload 10
 ```
 
 `zload` launches an interactive shell with `zprof` preloaded and prints the top startup contributors.
+
+Time Machine exclusions:
+
+```zsh
+tmexclude ~/projects node_modules    # Exclude all node_modules folders
+tmexclude -d ~ "Caches"              # Dry-run: preview what would be excluded
+```
 
 ## Secrets Management
 
