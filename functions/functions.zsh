@@ -151,3 +151,111 @@ zload() {
     rm -rf "$tmpdir"
   }
 }
+
+# Exclude folders from Time Machine backups recursively
+# Usage: tmexclude [-d|--dry-run] <base-path> <folder-name>
+tmexclude() {
+    local dry_run=0
+    local base_path=""
+    local folder_name=""
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -d|--dry-run)
+                dry_run=1
+                shift
+                ;;
+            -*)
+                echo "Usage: tmexclude [-d|--dry-run] <base-path> <folder-name>" >&2
+                return 1
+                ;;
+            *)
+                if [[ -z "$base_path" ]]; then
+                    base_path="$1"
+                elif [[ -z "$folder_name" ]]; then
+                    folder_name="$1"
+                else
+                    echo "Usage: tmexclude [-d|--dry-run] <base-path> <folder-name>" >&2
+                    return 1
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    # Validation: tmutil exists (macOS only)
+    if ! command -v tmutil >/dev/null 2>&1; then
+        echo "tmutil not found. This command requires macOS." >&2
+        return 1
+    fi
+
+    # Validation: correct argument count
+    if [[ -z "$base_path" || -z "$folder_name" ]]; then
+        echo "Usage: tmexclude [-d|--dry-run] <base-path> <folder-name>" >&2
+        return 1
+    fi
+
+    # Validation: base path exists
+    if [[ ! -e "$base_path" ]]; then
+        echo "Path does not exist: $base_path" >&2
+        return 1
+    fi
+
+    # Validation: base path is a directory
+    if [[ ! -d "$base_path" ]]; then
+        echo "Not a directory: $base_path" >&2
+        return 1
+    fi
+
+    # Validation: folder name is non-empty
+    if [[ -z "$folder_name" ]]; then
+        echo "Folder name cannot be empty" >&2
+        return 1
+    fi
+
+    # Find matching directories
+    local folders=()
+    while IFS= read -r -d '' folder; do
+        folders+=("$folder")
+    done < <(find "$base_path" -type d -name "$folder_name" -prune -print0 2>/dev/null)
+
+    # Handle no matches
+    if [[ ${#folders[@]} -eq 0 ]]; then
+        echo "No folders found matching '$folder_name' under '$base_path'"
+        return 0
+    fi
+
+    # Dry-run mode
+    if [[ $dry_run -eq 1 ]]; then
+        echo "Dry run - would exclude ${#folders[@]} folder(s):"
+        for folder in "${folders[@]}"; do
+            echo "  Would exclude: $folder"
+        done
+        return 0
+    fi
+
+    # Apply exclusions
+    local success_count=0
+    local fail_count=0
+
+    for folder in "${folders[@]}"; do
+        if sudo tmutil addexclusion "$folder" 2>/dev/null; then
+            echo "Excluding: $folder"
+            ((success_count++))
+        else
+            echo "Failed to exclude: $folder" >&2
+            ((fail_count++))
+        fi
+    done
+
+    # Summary
+    echo "Excluded $success_count folder(s)"
+
+    # Return error if all failed
+    if [[ $fail_count -gt 0 && $success_count -eq 0 ]]; then
+        return 1
+    fi
+
+    return 0
+}
