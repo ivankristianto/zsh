@@ -307,8 +307,33 @@ EOF
 }
 
 _speed_nq() {
-    echo "_speed_nq: not implemented yet" >&2
-    return 1
+    if ! command -v networkquality >/dev/null 2>&1; then
+        echo "networkquality not found. Requires macOS Monterey or later." >&2
+        return 1
+    fi
+
+    local start_ts end_ts duration output
+    start_ts=$EPOCHSECONDS
+    output="$(networkquality 2>&1)" || {
+        echo "networkquality failed:" >&2
+        printf '%s\n' "$output" >&2
+        return 1
+    }
+    end_ts=$EPOCHSECONDS
+    duration=$(( end_ts - start_ts ))
+
+    local down up rpm ping
+    down="$(printf '%s\n' "$output" | awk '/Downlink capacity:/ {printf "%.0f", $3; exit}')"
+    up="$(printf '%s\n'   "$output" | awk '/Uplink capacity:/   {printf "%.0f", $3; exit}')"
+    rpm="$(printf '%s\n'  "$output" | awk -F'[|]' '/Responsiveness:/ {gsub(/[^0-9]/, " ", $2); split($2, a, " "); for (i=1; i<=length(a); i++) if (a[i] ~ /^[0-9]+$/ && a[i]+0 > 0) {printf "%d", a[i]; exit}}')"
+    ping="$(printf '%s\n' "$output" | awk '/Idle Latency:/ {for (i=1; i<=NF; i++) if ($i ~ /^[0-9.]+$/) {printf "%.0f", $i; exit}}')"
+
+    echo "==> networkquality"
+    printf '  ⬇  %s Mbps   ⬆ %s Mbps\n' "${down:-?}" "${up:-?}"
+    if [[ -n "$rpm" || -n "$ping" ]]; then
+        printf '  RPM (load): %s   ping: %s ms\n' "${rpm:-?}" "${ping:-?}"
+    fi
+    printf '  duration: %ds\n' "$duration"
 }
 
 _speed_ookla() {
