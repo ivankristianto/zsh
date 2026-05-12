@@ -337,6 +337,29 @@ _speed_nq() {
 }
 
 _speed_ookla() {
-    echo "_speed_ookla: not implemented yet" >&2
-    return 1
+    if ! command -v speedtest >/dev/null 2>&1; then
+        echo "speedtest not found. Install with: brew install speedtest --formula" >&2
+        return 1
+    fi
+
+    local start_ts end_ts duration output
+    start_ts=$EPOCHSECONDS
+    output="$(speedtest --accept-license --accept-gdpr 2>&1)" || {
+        echo "speedtest failed:" >&2
+        printf '%s\n' "$output" >&2
+        return 1
+    }
+    end_ts=$EPOCHSECONDS
+    duration=$(( end_ts - start_ts ))
+
+    local down up ping server
+    down="$(printf   '%s\n' "$output" | awk '/^[[:space:]]*Download:/ {for (i=1; i<=NF; i++) if ($i ~ /^[0-9.]+$/) {printf "%.0f", $i; exit}}')"
+    up="$(printf     '%s\n' "$output" | awk '/^[[:space:]]*Upload:/   {for (i=1; i<=NF; i++) if ($i ~ /^[0-9.]+$/) {printf "%.0f", $i; exit}}')"
+    ping="$(printf   '%s\n' "$output" | awk '/Idle Latency:/ {for (i=1; i<=NF; i++) if ($i ~ /^[0-9.]+$/) {printf "%.0f", $i; exit}}')"
+    server="$(printf '%s\n' "$output" | awk '/^[[:space:]]*Server:/ {sub(/^[[:space:]]*Server:[[:space:]]*/, ""); sub(/ \(id:.*/, ""); print; exit}')"
+
+    echo "==> speedtest (Ookla)"
+    printf '  ⬇  %s Mbps   ⬆ %s Mbps\n' "${down:-?}" "${up:-?}"
+    printf '  server: %s   ping: %s ms\n' "${server:-?}" "${ping:-?}"
+    printf '  duration: %ds\n' "$duration"
 }
