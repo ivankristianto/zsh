@@ -259,3 +259,59 @@ tmexclude() {
 
     return 0
 }
+
+# Internet speed test
+# Usage:
+#   speed              # alias for `speed nq`
+#   speed nq           # macOS networkquality
+#   speed ookla        # Ookla speedtest CLI
+#   speed both         # run nq then ookla
+#   speed help         # show this help
+speed() {
+    local sub="${1:-nq}"
+    case "$sub" in
+        nq)
+            _speed_nq
+            ;;
+        ookla)
+            _speed_ookla
+            ;;
+        both)
+            local nq_status=0 ookla_status=0
+            _speed_nq || nq_status=$?
+            echo
+            _speed_ookla || ookla_status=$?
+            if [[ $nq_status -eq 0 || $ookla_status -eq 0 ]]; then
+                return 0
+            fi
+            return $ookla_status
+            ;;
+        help|-h|--help)
+            cat <<'EOF'
+Usage: speed [nq|ookla|both|help]
+
+  speed              alias for `speed nq`
+  speed nq           run macOS networkquality
+  speed ookla        run Ookla speedtest CLI
+  speed both         run both, one after the other
+  speed help         show this help
+EOF
+            return 0
+            ;;
+        *)
+            echo "Unknown subcommand: $sub" >&2
+            echo "Usage: speed [nq|ookla|both|help]" >&2
+            return 1
+            ;;
+    esac
+}
+
+_speed_nq() {
+    echo "_speed_nq: not implemented yet" >&2
+    return 1
+}
+
+_speed_ookla() {
+    echo "_speed_ookla: not implemented yet" >&2
+    return 1
+}
