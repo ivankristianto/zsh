@@ -260,13 +260,8 @@ tmexclude() {
     return 0
 }
 
-# Internet speed test
-# Usage:
-#   speed              # alias for `speed nq`
-#   speed nq           # macOS networkquality
-#   speed ookla        # Ookla speedtest CLI
-#   speed both         # run nq then ookla
-#   speed help         # show this help
+# Internet speed test (macOS networkquality and/or Ookla speedtest)
+# Usage: speed [nq|ookla|both|help]  — defaults to `nq`
 speed() {
     local sub="${1:-nq}"
     case "$sub" in
@@ -338,7 +333,8 @@ _speed_nq() {
 
 _speed_ookla() {
     if ! command -v speedtest >/dev/null 2>&1; then
-        echo "speedtest not found. Install with: brew install speedtest --formula" >&2
+        echo "speedtest not found. Install with:" >&2
+        echo "  brew tap teamookla/speedtest && brew install speedtest --formula" >&2
         return 1
     fi
 
