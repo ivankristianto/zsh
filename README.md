@@ -242,6 +242,7 @@ The AI will:
 | `switchphp` | Switch linked Homebrew PHP version                                              | `switchphp 8.3`       |
 | `up`        | Run daily software refresh (`~/.zsh`, current repo, Homebrew, npm globals, Node LTS, skills) | `up`                  |
 | `zload`     | Profile interactive zsh startup with `zprof`                                    | `zload 10`            |
+| `speed`     | Quick internet speed test (macOS `networkquality` or Ookla `speedtest`)         | `speed nq`            |
 | `tmexclude` | Recursively exclude folders from Time Machine backups                           | `tmexclude ~/projects node_modules` |
 
 Daily update command details:
@@ -273,6 +274,32 @@ Time Machine exclusions:
 ```zsh
 tmexclude ~/projects node_modules    # Exclude all node_modules folders
 tmexclude -d ~ "Caches"              # Dry-run: preview what would be excluded
+```
+
+Internet speed test:
+
+```zsh
+speed              # alias for `speed nq`
+speed nq           # macOS networkquality (built into macOS Monterey+)
+speed ookla        # Ookla speedtest CLI
+speed both         # run both, one after the other
+speed help         # show usage
+```
+
+Sample output:
+
+```
+==> networkquality
+  ⬇  892 Mbps   ⬆ 412 Mbps
+  RPM (load): 1240   ping: 14 ms
+  duration: 12s
+```
+
+To enable `speed ookla`, install Ookla's CLI:
+
+```
+brew tap teamookla/speedtest
+brew install speedtest --formula
 ```
 
 ## Secrets Management
