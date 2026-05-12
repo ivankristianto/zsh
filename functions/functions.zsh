@@ -320,8 +320,14 @@ _speed_nq() {
     local down up rpm ping
     down="$(printf '%s\n' "$output" | awk '/Downlink capacity:/ {printf "%.0f", $3; exit}')"
     up="$(printf '%s\n'   "$output" | awk '/Uplink capacity:/   {printf "%.0f", $3; exit}')"
-    rpm="$(printf '%s\n'  "$output" | awk -F'[|]' '/Responsiveness:/ {gsub(/[^0-9]/, " ", $2); split($2, a, " "); for (i=1; i<=length(a); i++) if (a[i] ~ /^[0-9]+$/ && a[i]+0 > 0) {printf "%d", a[i]; exit}}')"
+    rpm="$(printf '%s\n'  "$output" | awk '/Responsiveness:/ {if (match($0, /[0-9]+ RPM/)) {printf "%d", substr($0, RSTART, RLENGTH - 4); exit}}')"
     ping="$(printf '%s\n' "$output" | awk '/Idle Latency:/ {for (i=1; i<=NF; i++) if ($i ~ /^[0-9.]+$/) {printf "%.0f", $i; exit}}')"
+
+    if [[ -z "$down" || -z "$up" ]]; then
+        echo "networkquality output could not be parsed:" >&2
+        printf '%s\n' "$output" >&2
+        return 1
+    fi
 
     echo "==> networkquality"
     printf '  ⬇  %s Mbps   ⬆ %s Mbps\n' "${down:-?}" "${up:-?}"
@@ -353,6 +359,12 @@ _speed_ookla() {
     up="$(printf     '%s\n' "$output" | awk '/^[[:space:]]*Upload:/   {for (i=1; i<=NF; i++) if ($i ~ /^[0-9.]+$/) {printf "%.0f", $i; exit}}')"
     ping="$(printf   '%s\n' "$output" | awk '/Idle Latency:/ {for (i=1; i<=NF; i++) if ($i ~ /^[0-9.]+$/) {printf "%.0f", $i; exit}}')"
     server="$(printf '%s\n' "$output" | awk '/^[[:space:]]*Server:/ {sub(/^[[:space:]]*Server:[[:space:]]*/, ""); sub(/ \(id:.*/, ""); print; exit}')"
+
+    if [[ -z "$down" || -z "$up" ]]; then
+        echo "speedtest output could not be parsed:" >&2
+        printf '%s\n' "$output" >&2
+        return 1
+    fi
 
     echo "==> speedtest (Ookla)"
     printf '  ⬇  %s Mbps   ⬆ %s Mbps\n' "${down:-?}" "${up:-?}"
