@@ -1,6 +1,9 @@
 # Single entry point for ~/.zsh config
 # Usage in .zshrc: source ~/.zsh/init.zsh
 
+# Source profile for non-login shells (e.g. Terminal.app)
+[[ -r "$HOME/.zprofile" ]] && source "$HOME/.zprofile"
+
 export ZSH="${0:A:h}"
 
 _zsh_load() {
