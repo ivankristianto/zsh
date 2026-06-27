@@ -101,6 +101,17 @@ _ai_npm_install_global() {
   npm install -g "$@"
 }
 
+_ai_brew_install_cask() {
+  _ai_require_cmd brew || return 1
+
+  if [[ "${AI_INSTALL_DRY_RUN:-0}" == "1" ]]; then
+    printf "${_AI[yellow]}DRY-RUN${_AI[r]} brew install --cask %s\n" "$*"
+    return 0
+  fi
+
+  brew install --cask "$@"
+}
+
 _ai_cmd_available() {
   local cmd="$1"
   case "$cmd" in
@@ -113,6 +124,7 @@ _ai_cmd_available() {
     ll|llama.cpp|llamacpp|llama) _ai_has_cmd claude ;;
     codex|c)                  _ai_has_cmd codex && _ai_has_env OPENAI_API_KEY ;;
     gemini|ge)                _ai_has_cmd gemini && _ai_has_env GEMINI_API_KEY ;;
+    antigravity|ag|agy)       _ai_has_cmd agy ;;
     copilot|cp)               _ai_has_cmd copilot ;;
     oc|opencode)              _ai_has_cmd opencode ;;
     last|l)                   [[ -f "$(_ai_last_file)" ]] ;;

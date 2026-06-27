@@ -19,6 +19,7 @@ _ai_pick() {
   _ai_cmd_available llamacpp && entries+=("llama.cpp"$'\t'"$(_ai_check_cmd claude)  llama.cpp  │  llama.cpp Local      │  llama.cpp            │  claude")
   _ai_cmd_available codex && entries+=("codex"$'\t'"$(_ai_check OPENAI_API_KEY)  codex      │  OpenAI Codex CLI     │  codex                │  openai")
   _ai_cmd_available gemini && entries+=("gemini"$'\t'"$(_ai_check GEMINI_API_KEY)  gemini     │  Gemini CLI (yolo)    │  gemini-cli           │  google")
+  _ai_cmd_available antigravity && entries+=("antigravity"$'\t'"$(_ai_check_cmd agy)  antigrav  │  Antigravity CLI      │  agy                  │  google")
   _ai_cmd_available cp && entries+=("cp"$'\t'"$(_ai_check_cmd copilot)  cp         │  GitHub Copilot CLI   │  copilot              │  github")
   _ai_cmd_available oc && entries+=("oc"$'\t'"$(_ai_check_cmd opencode)  oc         │  OpenCode CLI         │  build agent          │  opencode")
 

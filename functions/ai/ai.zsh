@@ -33,6 +33,7 @@ ai() {
     ll|llama.cpp|llamacpp|llama) _ai_run_llamacpp "$@" ;;
     codex|c) _ai_run_codex "$@" ;;
     gemini|ge) _ai_run_gemini "$@" ;;
+    antigravity|ag|agy) _ai_run_antigravity "$@" ;;
     copilot|cp) _ai_run_copilot "$@" ;;
     oc|opencode) _ai_run_opencode "$@" ;;
     custom|cu) _ai_run_custom "$@" ;;

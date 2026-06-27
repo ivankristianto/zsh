@@ -1,7 +1,7 @@
 # ai bench — run a prompt across multiple Claude-backed providers sequentially
 
 # Providers that cannot accept a bare prompt non-interactively
-typeset -ga _AI_BENCH_EXCLUDED=(codex c gemini ge copilot cp opencode oc custom cu)
+typeset -ga _AI_BENCH_EXCLUDED=(codex c gemini ge antigravity ag agy copilot cp opencode oc custom cu)
 typeset -ga _AI_BENCH_SUPPORTED=(
   sonnet s haiku h opus o glm g kimi k mini m or openrouter ol ollama ll llama.cpp llamacpp llama
 )

@@ -12,6 +12,10 @@ _ai_help_status_row() {
   local llabel="$2"
   local rcheck="$3"
   local rlabel="$4"
+  if [[ -z "$rcheck" && -z "$rlabel" ]]; then
+    printf "    %s %s\n" "$lcheck" "$llabel"
+    return
+  fi
   printf "    %s %-24s %s %s\n" "$lcheck" "$llabel" "$rcheck" "$rlabel"
 }
 
@@ -45,6 +49,7 @@ _ai_help() {
   printf "  ${_AI[b]}  OTHER AGENTS${_AI[r]}\n"
   _ai_cmd_available codex && { _ai_help_cmd_row "codex" "c" "OpenAI Codex CLI"; printed=1; }
   _ai_cmd_available gemini && { _ai_help_cmd_row "gemini" "ge" "Gemini CLI (--yolo)"; printed=1; }
+  _ai_cmd_available antigravity && { _ai_help_cmd_row "antigravity" "ag" "Antigravity CLI"; printed=1; }
   _ai_cmd_available copilot && { _ai_help_cmd_row "copilot" "cp" "GitHub Copilot CLI"; printed=1; }
   _ai_cmd_available opencode && { _ai_help_cmd_row "opencode" "oc" "OpenCode CLI (--model --review)"; printed=1; }
 
@@ -66,6 +71,7 @@ _ai_help() {
   _ai_cmd_available llamacpp && { printf "    ${_AI[d]}ai ll --model qwen2.5-coder:14b \"draft tests\"${_AI[r]}\n"; ((example_count+=1)); }
   _ai_cmd_available codex && { printf "    ${_AI[d]}ai c \"refactor this\"${_AI[r]}\n"; ((example_count+=1)); }
   _ai_cmd_available gemini && { printf "    ${_AI[d]}ai ge \"summarize PR\"${_AI[r]}\n"; ((example_count+=1)); }
+  _ai_cmd_available antigravity && { printf "    ${_AI[d]}ai ag \"fix this test\"${_AI[r]}\n"; ((example_count+=1)); }
   _ai_cmd_available copilot && { printf "    ${_AI[d]}ai cp \"create release notes\"${_AI[r]}\n"; ((example_count+=1)); }
   _ai_cmd_available opencode && { printf "    ${_AI[d]}ai oc --review${_AI[r]}\n"; ((example_count+=1)); }
   _ai_cmd_available last && { printf "    ${_AI[d]}ai l${_AI[r]}\n"; ((example_count+=1)); }
@@ -75,15 +81,16 @@ _ai_help() {
   printf "\n"
   printf "  ${_AI[b]}HELPER NOTES${_AI[r]}\n"
   printf "    Repo: ${_AI[cyan]}https://github.com/ivankristianto/zsh${_AI[r]}\n"
-  printf "    Installer: ${_AI[d]}ai install claude|codex|gemini|ollama|copilot|opencode${_AI[r]}\n"
+  printf "    Installer: ${_AI[d]}ai install claude|codex|gemini|ollama|copilot|opencode|antigravity${_AI[r]}\n"
 
   printf "\n"
   printf "  ${_AI[b]}STATUS${_AI[r]}\n"
   _ai_help_status_row "$(_ai_check_cmd claude)" "claude (cli)" "$(_ai_check_cmd codex)" "codex (cli)"
-  _ai_help_status_row "$(_ai_check_cmd gemini)" "gemini (cli)" "$(_ai_check_cmd copilot)" "copilot (cli)"
-  _ai_help_status_row "$(_ai_check_cmd opencode)" "opencode (cli)" "$(_ai_check_ollama)" "ollama (localhost)"
-  _ai_help_status_row "$(_ai_check GLM_API_KEY)" "GLM_API_KEY" "$(_ai_check KIMI_API_KEY)" "KIMI_API_KEY"
-  _ai_help_status_row "$(_ai_check MINIMAX_API_KEY)" "MINIMAX_API_KEY" "$(_ai_check OPENROUTER_API_KEY)" "OPENROUTER_API_KEY"
-  _ai_help_status_row "$(_ai_check OPENAI_API_KEY)" "OPENAI_API_KEY" "$(_ai_check GEMINI_API_KEY)" "GEMINI_API_KEY"
+  _ai_help_status_row "$(_ai_check_cmd gemini)" "gemini (cli)" "$(_ai_check_cmd agy)" "antigravity (agy)"
+  _ai_help_status_row "$(_ai_check_cmd copilot)" "copilot (cli)" "$(_ai_check_cmd opencode)" "opencode (cli)"
+  _ai_help_status_row "$(_ai_check_ollama)" "ollama (localhost)" "$(_ai_check GLM_API_KEY)" "GLM_API_KEY"
+  _ai_help_status_row "$(_ai_check KIMI_API_KEY)" "KIMI_API_KEY" "$(_ai_check MINIMAX_API_KEY)" "MINIMAX_API_KEY"
+  _ai_help_status_row "$(_ai_check OPENROUTER_API_KEY)" "OPENROUTER_API_KEY" "$(_ai_check OPENAI_API_KEY)" "OPENAI_API_KEY"
+  _ai_help_status_row "$(_ai_check GEMINI_API_KEY)" "GEMINI_API_KEY" "" ""
   printf "\n"
 }

@@ -16,9 +16,19 @@ cat > "$TEST_TMP/bin/npm" <<'STUB'
 print -r -- "npm $*" >> "$AI_TEST_CALLS"
 STUB
 
+cat > "$TEST_TMP/bin/brew" <<'STUB'
+#!/usr/bin/env zsh
+print -r -- "brew $*" >> "$AI_TEST_CALLS"
+STUB
+
 cat > "$TEST_TMP/bin/codex" <<'STUB'
 #!/usr/bin/env zsh
 print -r -- "codex $*" >> "$AI_TEST_CALLS"
+STUB
+
+cat > "$TEST_TMP/bin/agy" <<'STUB'
+#!/usr/bin/env zsh
+print -r -- "agy $*" >> "$AI_TEST_CALLS"
 STUB
 
 cat > "$TEST_TMP/bin/claude" <<'STUB'
@@ -42,6 +52,7 @@ print -r -- "opencode $*" >> "$AI_TEST_CALLS"
 STUB
 
 chmod +x "$TEST_TMP/bin/npm" "$TEST_TMP/bin/codex" "$TEST_TMP/bin/claude" "$TEST_TMP/bin/opencode"
+chmod +x "$TEST_TMP/bin/brew" "$TEST_TMP/bin/agy"
 export PATH="$TEST_TMP/bin:$PATH"
 
 assert_contains() {
@@ -72,14 +83,21 @@ source "$ROOT_DIR/functions/ai_functions.zsh"
 
 help_output="$(ai help)"
 assert_contains "$help_output" "https://github.com/ivankristianto/zsh" "help should include repo helper link"
-assert_contains "$help_output" "ai install claude|codex|gemini|ollama|copilot|opencode" "help should include installer helper notes"
+assert_contains "$help_output" "ai install claude|codex|gemini|ollama|copilot|opencode|antigravity" "help should include installer helper notes"
 assert_contains "$help_output" "llama.cpp" "help should include llama.cpp command when claude is available"
+assert_contains "$help_output" "antigravity" "help should include antigravity when agy is available"
 
 dry_run_output="$(ai install codex --dry-run)"
 assert_contains "$dry_run_output" "@openai/codex" "codex installer should map to @openai/codex"
 
 alias_dry_run_output="$(ai install c --dry-run)"
 assert_contains "$alias_dry_run_output" "@openai/codex" "installer should support codex alias"
+
+antigravity_dry_run_output="$(ai install antigravity --dry-run)"
+assert_contains "$antigravity_dry_run_output" "brew install --cask antigravity-cli" "antigravity installer should use Homebrew cask"
+
+antigravity_alias_dry_run_output="$(ai install ag --dry-run)"
+assert_contains "$antigravity_alias_dry_run_output" "brew install --cask antigravity-cli" "installer should support antigravity alias"
 
 typeset -A expected_install=(
   [claude]='@anthropic-ai/claude-code'
@@ -120,6 +138,15 @@ ai l >/dev/null
 codex_count="$(rg -c "^codex " "$AI_TEST_CALLS")"
 if [[ "$codex_count" -lt 2 ]]; then
   print -r -- "FAIL: expected codex to be called at least twice (direct + last), got $codex_count"
+  exit 1
+fi
+
+ai ag "hello antigravity" >/dev/null
+ai l >/dev/null
+
+agy_count="$(rg -c "^agy " "$AI_TEST_CALLS")"
+if [[ "$agy_count" -lt 2 ]]; then
+  print -r -- "FAIL: expected agy to be called at least twice (direct + last), got $agy_count"
   exit 1
 fi
 
@@ -205,6 +232,10 @@ bench_skip_output="$(ai bench "hello" codex 2>&1)"
 assert_contains "$bench_skip_output" "not supported in bench" \
   "ai bench should reject codex as non-Claude provider"
 
+bench_antigravity_output="$(ai bench "hello" antigravity 2>&1)"
+assert_contains "$bench_antigravity_output" "not supported in bench" \
+  "ai bench should reject antigravity as non-Claude provider"
+
 # ai bench: unknown provider emits "unavailable"
 bench_unknown_output="$(ai bench "hello" unknownxyz 2>&1)"
 assert_contains "$bench_unknown_output" "unavailable" \
@@ -216,7 +247,7 @@ assert_contains "$bench_help_output" "unavailable" \
   "ai bench should reject help as a non-provider target"
 
 # ai bench: all providers excluded → exits non-zero
-if ai bench "hello" codex gemini >/dev/null 2>&1; then
+if ai bench "hello" codex gemini antigravity >/dev/null 2>&1; then
   print -r -- "FAIL: ai bench with only excluded providers should exit non-zero"
   exit 1
 fi

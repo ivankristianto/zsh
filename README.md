@@ -129,7 +129,7 @@ Implementation layout:
 
 - Entry loader: `functions/ai_functions.zsh`
 - Modular files: `functions/ai/*.zsh`
-- Provider domains: `functions/ai/providers/{claude,ollama,llamacpp,codex,gemini,copilot,opencode}.zsh`
+- Provider domains: `functions/ai/providers/{claude,ollama,llamacpp,codex,gemini,antigravity,copilot,opencode}.zsh`
 
 | Command      | Alias | Purpose                                               | Example                                                                      |
 | ------------ | ----- | ----------------------------------------------------- | ---------------------------------------------------------------------------- |
@@ -146,9 +146,10 @@ Implementation layout:
 | `custom`     | `cu`  | Claude Code via custom Anthropic-compatible endpoint  | `ai custom --model gpt-4o --endpoint https://... --apikey ... "debug error"` |
 | `codex`      | `c`   | OpenAI Codex CLI                                      | `ai codex "refactor this function"`                                          |
 | `gemini`     | `ge`  | Gemini CLI in yolo mode                               | `ai gemini "summarize changes"`                                              |
+| `antigravity` | `ag` | Antigravity CLI                                       | `ai antigravity "fix failing tests"`                                         |
 | `copilot`    | `cp`  | GitHub Copilot CLI                                    | `ai copilot "generate release notes"`                                        |
 | `opencode`   | `oc`  | OpenCode build agent (`--model`, `--review`)          | `ai opencode --review`                                                       |
-| `install`    | `i`   | Install a supported coding agent CLI via npm global   | `ai install codex`                                                           |
+| `install`    | `i`   | Install a supported coding agent CLI                  | `ai install codex`                                                           |
 | `bench`      | `b`   | Run one prompt across Claude-backed providers         | `ai bench "review this diff" glm kimi or`                                   |
 | `context`    | `ctx` | Dump project context as markdown                      | `ai context --copy`                                                          |
 | `last`       | `l`   | Re-run last selected provider                         | `ai last`                                                                    |
@@ -165,6 +166,7 @@ Required tooling/env depends on command:
 - `ai llama.cpp` (`ai ll`) uses hardcoded local Anthropic-compatible values (`http://localhost:8001`, `sk-no-key-required`)
 - `ai codex` requires `codex` + `OPENAI_API_KEY`
 - `ai gemini` requires `gemini` + `GEMINI_API_KEY`
+- `ai antigravity` (`ai ag`) requires `agy`
 - `ai copilot` requires `copilot`
 - `ai opencode` (`ai oc`) requires `opencode`
 - Interactive picker (`ai`) requires `fzf`
@@ -185,6 +187,8 @@ ai cu --model gpt-4o --endpoint https://api.example.com --apikey sk-... "explain
 # Standalone CLIs
 ai codex "refactor this function safely"
 ai c "refactor this function safely"
+ai antigravity "fix failing tests"
+ai ag "fix failing tests"
 ai copilot "create release notes from commits"
 ai cp "create release notes from commits"
 ai opencode --review
@@ -195,6 +199,7 @@ ai last
 ai l
 ai install claude
 ai install codex --dry-run
+ai install antigravity --dry-run
 ai bench "compare rollback plans" glm kimi openrouter
 ai context
 ai context --copy
@@ -207,6 +212,7 @@ ai context --copy
   - `ai install claude`
   - `ai install codex`
   - `ai install gemini`
+  - `ai install antigravity` (Homebrew cask: `brew install --cask antigravity-cli`)
   - `ai install ollama`
   - `ai install copilot`
   - `ai install opencode`

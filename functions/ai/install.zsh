@@ -4,6 +4,7 @@ typeset -gA _AI_INSTALL_PACKAGES=(
   [claude]='@anthropic-ai/claude-code'
   [codex]='@openai/codex'
   [gemini]='@google/gemini-cli'
+  [antigravity]='antigravity-cli'
   [ollama]='ollama'
   [copilot]='@github/copilot'
   [opencode]='opencode-ai'
@@ -11,13 +12,14 @@ typeset -gA _AI_INSTALL_PACKAGES=(
 
 _ai_install_usage() {
   printf "${_AI[b]}Usage:${_AI[r]} ai install <agent> [--dry-run]\n"
-  printf "${_AI[d]}Supported agents:${_AI[r]} claude codex gemini ollama copilot opencode\n"
+  printf "${_AI[d]}Supported agents:${_AI[r]} claude codex gemini ollama copilot opencode antigravity\n"
 }
 
 _ai_install_resolve_agent() {
   case "$1" in
     c|codex) print -r -- "codex" ;;
     ge|gemini) print -r -- "gemini" ;;
+    ag|agy|antigravity) print -r -- "antigravity" ;;
     cp|copilot) print -r -- "copilot" ;;
     ol|ollama) print -r -- "ollama" ;;
     oc|opencode) print -r -- "opencode" ;;
@@ -76,6 +78,15 @@ _ai_install() {
   fi
 
   printf "${_AI[bcyan]}▶${_AI[r]} Installing ${_AI[b]}%s${_AI[r]} (${_AI[d]}%s${_AI[r]})\n" "$normalized" "$pkg"
+
+  if [[ "$normalized" == "antigravity" ]]; then
+    if [[ "$dry_run" -eq 1 ]]; then
+      AI_INSTALL_DRY_RUN=1 _ai_brew_install_cask "$pkg"
+    else
+      _ai_brew_install_cask "$pkg"
+    fi
+    return
+  fi
 
   if [[ "$dry_run" -eq 1 ]]; then
     AI_INSTALL_DRY_RUN=1 _ai_npm_install_global "$pkg"

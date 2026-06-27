@@ -10,6 +10,7 @@ for _ai_file in \
   providers/llamacpp.zsh \
   providers/codex.zsh \
   providers/gemini.zsh \
+  providers/antigravity.zsh \
   providers/copilot.zsh \
   providers/opencode.zsh \
   ship.zsh \
