@@ -137,6 +137,7 @@ Implementation layout:
 | `sonnet`     | `s`   | Claude Code with Claude Sonnet                        | `ai sonnet "review this diff"`                                               |
 | `haiku`      | `h`   | Claude Code with Claude Haiku                         | `ai haiku "summarize this log"`                                              |
 | `opus`       | `o`   | Claude Code with Claude Opus                          | `ai opus "deep architecture analysis"`                                       |
+| `fable`      | `f`   | Claude Code with Claude Fable                         | `ai fable "brainstorm approaches"`                                           |
 | `glm`        | `g`   | Claude Code via GLM-5.1 (Z.ai)                        | `ai glm "plan rollout steps"`                                                |
 | `kimi`       | `k`   | Claude Code via Kimi K2.5 (Moonshot)                  | `ai k "draft migration plan"`                                                |
 | `mini`       | `m`   | Claude Code via MiniMax M2.1                          | `ai mini "quick fix proposal"`                                               |
@@ -158,7 +159,7 @@ Implementation layout:
 
 Required tooling/env depends on command:
 
-- Claude Code backends (`sonnet/haiku/opus/glm/kimi/mini/openrouter/ollama/llama.cpp/custom`) require `claude`
+- Claude Code backends (`sonnet/haiku/opus/fable/glm/kimi/mini/openrouter/ollama/llama.cpp/custom`) require `claude`
 - `ai glm` also requires `GLM_API_KEY`
 - `ai k` (`ai kimi`) also requires `KIMI_API_KEY`
 - `ai mini` also requires `MINIMAX_API_KEY`

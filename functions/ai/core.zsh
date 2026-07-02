@@ -115,7 +115,7 @@ _ai_brew_install_cask() {
 _ai_cmd_available() {
   local cmd="$1"
   case "$cmd" in
-    sonnet|haiku|opus|custom) _ai_has_cmd claude ;;
+    sonnet|haiku|opus|fable|custom) _ai_has_cmd claude ;;
     glm)                      _ai_has_cmd claude && _ai_has_env GLM_API_KEY ;;
     kimi|k)                   _ai_has_cmd claude && _ai_has_env KIMI_API_KEY ;;
     mini|m)                   _ai_has_cmd claude && _ai_has_env MINIMAX_API_KEY ;;

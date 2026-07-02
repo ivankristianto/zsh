@@ -71,6 +71,7 @@ _ai_run_ship() {
     sonnet|s) _ai_run_claude_ship "sonnet" "$@" ;;
     haiku|h) _ai_run_claude_ship "haiku" "$@" ;;
     opus|o) _ai_run_claude_ship "opus" "$@" ;;
+    fable|f) _ai_run_claude_ship "fable" "$@" ;;
     glm|g) _ai_run_provider_ship "glm" "$@" ;;
     kimi|k) _ai_run_provider_ship "kimi" "$@" ;;
     mini|m) _ai_run_provider_ship "mini" "$@" ;;

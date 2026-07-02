@@ -25,6 +25,7 @@ ai() {
     sonnet|s) _ai_run_claude sonnet "$@" ;;
     haiku|h) _ai_run_claude haiku "$@" ;;
     opus|o) _ai_run_claude opus "$@" ;;
+    fable|f) _ai_run_claude fable "$@" ;;
     glm|g) _ai_run_provider glm "$@" ;;
     kimi|k) _ai_run_provider kimi "$@" ;;
     mini|m) _ai_run_provider mini "$@" ;;

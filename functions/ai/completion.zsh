@@ -8,6 +8,8 @@ _ai_completions() {
     'h:Claude Haiku'
     'opus:Claude Opus'
     'o:Claude Opus'
+    'fable:Claude Fable'
+    'f:Claude Fable'
     'glm:GLM-5.1'
     'g:GLM-5.1'
     'kimi:Kimi K2.5 via Moonshot'

@@ -3,7 +3,7 @@
 # Providers that cannot accept a bare prompt non-interactively
 typeset -ga _AI_BENCH_EXCLUDED=(codex c gemini ge antigravity ag agy copilot cp opencode oc custom cu)
 typeset -ga _AI_BENCH_SUPPORTED=(
-  sonnet s haiku h opus o glm g kimi k mini m or openrouter ol ollama ll llama.cpp llamacpp llama
+  sonnet s haiku h opus o fable f glm g kimi k mini m or openrouter ol ollama ll llama.cpp llamacpp llama
 )
 
 _ai_bench() {
@@ -30,6 +30,7 @@ _ai_bench() {
       s) candidate="sonnet" ;;
       h) candidate="haiku" ;;
       o) candidate="opus" ;;
+      f) candidate="fable" ;;
       g) candidate="glm" ;;
       k) candidate="kimi" ;;
       m) candidate="mini" ;;
@@ -59,6 +60,7 @@ _ai_bench() {
       sonnet|s)                    _ai_run_claude sonnet "$prompt" ;;
       haiku|h)                     _ai_run_claude haiku  "$prompt" ;;
       opus|o)                      _ai_run_claude opus   "$prompt" ;;
+      fable|f)                     _ai_run_claude fable  "$prompt" ;;
       glm|g)                       _ai_run_provider glm  "$prompt" ;;
       kimi|k)                      _ai_run_provider kimi "$prompt" ;;
       mini|m)                      _ai_run_provider mini "$prompt" ;;

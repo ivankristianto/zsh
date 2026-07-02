@@ -37,6 +37,7 @@ _ai_help() {
   _ai_cmd_available sonnet && { _ai_help_cmd_row "sonnet" "s" "Claude Sonnet"; printed=1; }
   _ai_cmd_available haiku && { _ai_help_cmd_row "haiku" "h" "Claude Haiku"; printed=1; }
   _ai_cmd_available opus && { _ai_help_cmd_row "opus" "o" "Claude Opus"; printed=1; }
+  _ai_cmd_available fable && { _ai_help_cmd_row "fable" "f" "Claude Fable"; printed=1; }
   _ai_cmd_available glm && { _ai_help_cmd_row "glm" "g" "GLM-5.1 (Z.ai)"; printed=1; }
   _ai_cmd_available kimi && { _ai_help_cmd_row "kimi" "k" "Kimi K2.5 (Moonshot)"; printed=1; }
   _ai_cmd_available mini && { _ai_help_cmd_row "mini" "m" "MiniMax M2.1"; printed=1; }
